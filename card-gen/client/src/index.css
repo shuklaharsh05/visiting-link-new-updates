@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #ff64f2 #ffffff;
+}
+
+/* For webkit browsers: simulate a scrollbar with a vertical gradient on the thumb */
+.scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    /* Gradient background for the thumb */
+    background: linear-gradient(180deg, #ae9bff 0%, #6D63F5 100%);
+}
+.scrollbar::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+.shine-btn .shine-glass {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: -130%;
+    width: 120%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.5) 50%,
+      rgba(255,255,255,0) 100%
+    );
+    opacity: 0.7;
+    transform: skewX(-25deg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .shine-btn .shine-glass {
+      animation: shine-move 0.85s cubic-bezier(0.45,0.05,0.55,0.95) 0s infinite;
+      animation-delay: 0s;
+      animation-iteration-count: infinite;
+      animation-fill-mode: none;
+      animation-direction: normal;
+      animation-timing-function: cubic-bezier(0.45,0.05,0.55,0.95);
+      animation-duration: 0.85s;
+      /* Start once every 3.2s, including shine duration */
+      animation-name: shine-move;
+      /* To force shine every N seconds, use step + delay */
+      animation-delay: 0s;
+      animation-iteration-count: infinite;
+      animation-duration: 4s; /* Controls repeat period: 0.85s anim, 3.15s idle */
+    }
+    @keyframes shine-move {
+      0% {
+        left: -130%;
+        opacity: 0.7;
+      }
+      14% {
+        left: 95%;
+        opacity: 0.9;
+      }
+      20% {
+        left: 130%;
+        opacity: 0;
+      }
+      100% {
+        left: 130%;
+        opacity: 0;
+      }
+    }
+  }

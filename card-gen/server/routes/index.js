@@ -1,0 +1,41 @@
+import express from "express";
+import submissionRoutes from "./submissionRoutes.js";
+import cardRoutes from "./cardRoutes.js";
+import mediaRoutes from "./mediaRoutes.js";
+import authRoutes from "./authRoutes.js";
+import categoryRoutes from "./categoryRoutes.js";
+import inquiryRoutes from "./inquiryRoutes.js";
+import userRoutes from "./userRoutes.js";
+import appointmentRoutes from "./appointmentRoutes.js";
+import adminRoutes from "./adminRoutes.js";
+import paymentRoutes from "./paymentRoutes.js";
+import walletRoutes from "./walletRoutes.js";
+import resellerRoutes from "./resellerRoutes.js";
+import planRoutes from "./planRoutes.js";
+import couponRoutes from "./couponRoutes.js";
+import contactRoutes from "./contactRoutes.js";
+import detailsRoutes from "./detailsRoutes.js";
+import expoRoutes from "./expoRoutes.js";
+import { authLimiter, paymentLimiter } from "../middleware/securityMiddleware.js";
+
+const router = express.Router();
+
+router.use("/submissions", submissionRoutes);
+router.use("/cards", cardRoutes);
+router.use("/media", mediaRoutes);
+router.use("/auth", authLimiter, authRoutes);
+router.use("/categories", categoryRoutes);
+router.use("/inquiries", inquiryRoutes);
+router.use("/users", userRoutes);
+router.use("/appointments", appointmentRoutes);
+router.use("/admins", adminRoutes);
+router.use("/admin", resellerRoutes);
+router.use("/payment", paymentLimiter, paymentRoutes);
+router.use("/wallet", paymentLimiter, walletRoutes);
+router.use("/plans", planRoutes);
+router.use("/coupons", couponRoutes);
+router.use("/contacts", contactRoutes);
+router.use("/details", detailsRoutes);
+router.use("/expo", expoRoutes);
+
+export default router;

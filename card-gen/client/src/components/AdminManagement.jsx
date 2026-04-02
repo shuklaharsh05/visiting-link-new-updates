@@ -1,0 +1,486 @@
+import React, { useState, useEffect } from 'react';
+import { adminAPI } from '../api/admins';
+import { useToast } from '../contexts/ToastContext';
+
+const AdminManagement = () => {
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    password: '',
+    confirmPassword: '',
+    type: 'individual',
+    costPerCard: 0,
+    walletBalance: 0,
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
+
+  const fetchAdmins = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getAllAdmins();
+      setAdmins(response);
+    } catch (error) {
+      showToast('Failed to fetch admins', 'error');
+      // console.error('Error fetching admins:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      showToast('Admin name is required', 'error');
+      return false;
+    }
+    if (!formData.password) {
+      showToast('Password is required', 'error');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      showToast('Password must be at least 6 characters', 'error');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      showToast('Passwords do not match', 'error');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    try {
+      if (editingAdmin) {
+        await adminAPI.updateAdmin(editingAdmin._id, {
+          name: formData.name,
+          password: formData.password,
+          type: formData.type,
+          costPerCard: Number(formData.costPerCard || 0),
+        });
+        showToast('Admin updated successfully', 'success');
+      } else {
+        await adminAPI.createAdmin({
+          name: formData.name,
+          password: formData.password,
+          type: formData.type,
+          costPerCard: Number(formData.costPerCard || 0),
+        });
+        showToast('Admin created successfully', 'success');
+      }
+      
+      resetForm();
+      fetchAdmins();
+    } catch (error) {
+      showToast(error.error || 'Operation failed', 'error');
+      // console.error('Error saving admin:', error);
+    }
+  };
+
+  const handleEdit = async (admin) => {
+    try {
+      setEditingAdmin(admin);
+      setFormData({
+        name: admin.name,
+        password: '',
+        confirmPassword: '',
+        type: admin.type || 'individual',
+        costPerCard: admin.costPerCard ?? 0,
+        walletBalance: admin.walletBalance ?? 0,
+      });
+      
+      // Fetch current password
+      const adminWithPassword = await adminAPI.getAdminById(admin._id);
+      setCurrentPassword(adminWithPassword.password);
+      
+      setShowCreateForm(true);
+    } catch (error) {
+      showToast('Failed to load admin details', 'error');
+    }
+  };
+
+  const handleDelete = async (admin) => {
+    if (!window.confirm(`Are you sure you want to delete admin "${admin.name}"?`)) {
+      return;
+    }
+
+    try {
+      await adminAPI.deleteAdmin(admin._id);
+      showToast('Admin deleted successfully', 'success');
+      fetchAdmins();
+    } catch (error) {
+      showToast(error.error || 'Failed to delete admin', 'error');
+      // console.error('Error deleting admin:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      password: '',
+      confirmPassword: '',
+      type: 'individual',
+      costPerCard: 0,
+      walletBalance: 0,
+    });
+    setEditingAdmin(null);
+    setShowCreateForm(false);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setShowCurrentPassword(false);
+    setCurrentPassword('');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Admin Management</h1>
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Create New Admin
+        </button>
+      </div>
+
+      {/* Create/Edit Form */}
+      {showCreateForm && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">
+            {editingAdmin ? 'Edit Admin' : 'Create New Admin'}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="individual">individual</option>
+                  <option value="corporate">corporate</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cost per card (₹)
+                </label>
+                <input
+                  type="number"
+                  name="costPerCard"
+                  min="0"
+                  value={formData.costPerCard}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {editingAdmin ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Wallet balance (₹)
+                </label>
+                <input
+                  type="number"
+                  name="walletBalance"
+                  value={formData.walletBalance}
+                  readOnly
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Wallet balance can’t be updated from here.
+                </p>
+              </div>
+            ) : null}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Admin Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter admin name"
+                required
+              />
+            </div>
+            {/* {editingAdmin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    readOnly
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+                    placeholder="Current password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                  >
+                    {showCurrentPassword ? (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">This is the current password for this admin</p>
+              </div>
+            )} */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Confirm password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {editingAdmin ? 'Update Admin' : 'Create Admin'}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Admins List */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Admins List</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cost / Card
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Wallet
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Users created
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cards created
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {admins.length === 0 ? (
+                <tr>
+                  <td colSpan="11" className="px-6 py-4 text-center text-gray-500">
+                    No admins found
+                  </td>
+                </tr>
+              ) : (
+                admins.map((admin) => (
+                  <tr key={admin._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {admin.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {admin.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {admin.type || 'individual'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ₹{admin.costPerCard ?? 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ₹{admin.walletBalance ?? 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 tabular-nums">
+                      {admin.usersCreatedCount ?? 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 tabular-nums">
+                      {admin.cardsCreatedCount ?? 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        admin.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {admin.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(admin.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {admin.lastLogin 
+                        ? new Date(admin.lastLogin).toLocaleDateString()
+                        : 'Never'
+                      }
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEdit(admin)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(admin)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminManagement;
