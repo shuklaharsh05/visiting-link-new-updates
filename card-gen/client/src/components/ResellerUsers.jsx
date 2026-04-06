@@ -218,7 +218,7 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                       {c.name || c.data?.CompanyName || c.data?.name || "Untitled card"}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {c.categoryId} · {c.templateId}
+                      Card Type : {c.categoryId} card
                       <br />
                       Updated {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : ""}
                       {c.lastEditedBy ? ` · Edited by ${c.lastEditedBy}` : ""}

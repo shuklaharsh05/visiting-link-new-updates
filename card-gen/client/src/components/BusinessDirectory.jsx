@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -30,6 +30,20 @@ import CardGenerator from "./CardGenerator";
 import CardPreviewModal from "./CardPreviewModal";
 import { useToast } from "../contexts/ToastContext";
 
+const ASSIGN_CATEGORY_ORDER = ["in-house", "corporate", "individual"];
+const ASSIGN_CATEGORY_HEADINGS = {
+  "in-house": "In-House Admins",
+  corporate: "Corporate Admins",
+  individual: "Individual Admins",
+};
+
+function normalizeAssignAdminType(raw) {
+  const t = String(raw || "individual").toLowerCase();
+  if (t === "in-house" || t === "inhouse") return "in-house";
+  if (t === "corporate") return "corporate";
+  return "individual";
+}
+
 const BusinessDirectory = ({ onEditCard }) => {
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
@@ -60,6 +74,10 @@ const BusinessDirectory = ({ onEditCard }) => {
   const loadMoreRef = useRef(null);
   const pinMenuRef = useRef(null);
   const { success: showSuccess, error: showError } = useToast();
+
+  const [assignModalInquiry, setAssignModalInquiry] = useState(null);
+  const [assignSearch, setAssignSearch] = useState("");
+  const [assignCategoryFilter, setAssignCategoryFilter] = useState("all");
 
   const authUser = JSON.parse(localStorage.getItem("auth") || "{}").user || {};
   const isSuperadmin = authUser.role === "superadmin";
@@ -194,9 +212,56 @@ const BusinessDirectory = ({ onEditCard }) => {
       await adminAPI.assignInquiry(inquiryId, assignedTo);
       showSuccess("Inquiry assigned successfully");
       resetAndFetchInquiries();
+      return true;
     } catch (err) {
       showError("Failed to assign inquiry");
+      return false;
     }
+  };
+
+  const assignableAdmins = useMemo(
+    () => admins.filter((a) => a.role === "admin" && a.isActive !== false),
+    [admins]
+  );
+
+  const assignModalFiltered = useMemo(() => {
+    const q = assignSearch.trim().toLowerCase();
+    return assignableAdmins.filter((a) => {
+      if (q && !String(a.name || "").toLowerCase().includes(q)) return false;
+      if (assignCategoryFilter === "all") return true;
+      return normalizeAssignAdminType(a.type) === assignCategoryFilter;
+    });
+  }, [assignableAdmins, assignSearch, assignCategoryFilter]);
+
+  const assignModalGrouped = useMemo(() => {
+    const map = { "in-house": [], corporate: [], individual: [] };
+    for (const a of assignModalFiltered) {
+      const k = normalizeAssignAdminType(a.type);
+      if (map[k]) map[k].push(a);
+      else map.individual.push(a);
+    }
+    for (const k of ASSIGN_CATEGORY_ORDER) {
+      map[k].sort((x, y) => String(x.name).localeCompare(String(y.name)));
+    }
+    return map;
+  }, [assignModalFiltered]);
+
+  const closeAssignModal = () => {
+    setAssignModalInquiry(null);
+    setAssignSearch("");
+    setAssignCategoryFilter("all");
+  };
+
+  const confirmAssignAdmin = async (adminName) => {
+    if (!assignModalInquiry) return;
+    const ok = await handleAssignInquiry(assignModalInquiry._id, adminName);
+    if (ok) closeAssignModal();
+  };
+
+  const confirmUnassign = async () => {
+    if (!assignModalInquiry) return;
+    const ok = await handleAssignInquiry(assignModalInquiry._id, "");
+    if (ok) closeAssignModal();
   };
 
   // Infinite scroll: load next page when sentinel becomes visible
@@ -710,7 +775,7 @@ const BusinessDirectory = ({ onEditCard }) => {
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -725,14 +790,14 @@ const BusinessDirectory = ({ onEditCard }) => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="Start Date"
               />
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="End Date"
               />
               {(startDate || endDate) && (
@@ -757,7 +822,7 @@ const BusinessDirectory = ({ onEditCard }) => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="generated">Generated</option>
@@ -773,7 +838,7 @@ const BusinessDirectory = ({ onEditCard }) => {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Payments</option>
               <option value="Done">Done</option>
@@ -808,7 +873,7 @@ const BusinessDirectory = ({ onEditCard }) => {
                         ref={selectAllCheckboxRef}
                         checked={filteredInquiries.length > 0 && selectedIds.length === filteredInquiries.length}
                         onChange={toggleSelectAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </th>
                   )}
@@ -850,7 +915,7 @@ const BusinessDirectory = ({ onEditCard }) => {
                           type="checkbox"
                           checked={selectedIds.includes(inquiry._id)}
                           onChange={() => toggleSelectOne(inquiry._id)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-gray-300 text-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
                     )}
@@ -879,26 +944,37 @@ const BusinessDirectory = ({ onEditCard }) => {
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-sm text-gray-600">
-                        {new Date(inquiry.createdAt).toLocaleDateString()}
+                        {(() => {
+                          const d = new Date(inquiry.createdAt);
+                          const day = d.getDate();
+                          const month = d.toLocaleString('en-US', { month: 'short' });
+                          const year = d.getFullYear();
+                          return `${day} ${month} ${year}`;
+                        })()}
                       </div>
                     </td>
                     {JSON.parse(localStorage.getItem("auth") || "{}").user
                       ?.role === "superadmin" && (
                         <td className="py-4 px-6">
-                          <select
-                            value={inquiry.assignedTo || ""}
-                            onChange={(e) =>
-                              handleAssignInquiry(inquiry._id, e.target.value)
-                            }
-                            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Unassigned</option>
-                            {admins.map((admin) => (
-                              <option key={admin._id} value={admin.name}>
-                                {admin.name}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex flex-col gap-1.5 min-w-[10rem]">
+                            <span
+                              className="text-sm text-gray-800 truncate max-w-[200px]"
+                              title={inquiry.assignedTo || ""}
+                            >
+                              {inquiry.assignedTo || "—"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssignModalInquiry(inquiry);
+                                setAssignSearch("");
+                                setAssignCategoryFilter("all");
+                              }}
+                              className="text-left text-sm text-blue-600 hover:text-blue-800 font-medium w-fit"
+                            >
+                              {inquiry.assignedTo ? "Change assignment" : "Assign"}
+                            </button>
+                          </div>
                         </td>
                       )}
                     <td className="py-4 px-6">
@@ -1039,6 +1115,109 @@ const BusinessDirectory = ({ onEditCard }) => {
         </div>
       </div>
 
+      {/* Assign inquiry — admin picker modal */}
+      {assignModalInquiry && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="assign-modal-title"
+          onClick={closeAssignModal}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-gray-100 shrink-0">
+              <h3 id="assign-modal-title" className="text-lg font-semibold text-gray-900">
+                Assign inquiry
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Choose an admin for{" "}
+                <strong className="text-gray-800">{assignModalInquiry.name}</strong>
+              </p>
+              <div className="mt-4 space-y-3">
+                <input
+                  type="search"
+                  value={assignSearch}
+                  onChange={(e) => setAssignSearch(e.target.value)}
+                  placeholder="Search by admin name…"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  autoFocus
+                />
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Category
+                  </label>
+                  <select
+                    value={assignCategoryFilter}
+                    onChange={(e) => setAssignCategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="all">All types</option>
+                    <option value="in-house">In-House Admin</option>
+                    <option value="corporate">Corporate Admin</option>
+                    <option value="individual">Individual Admin</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-6">
+              {ASSIGN_CATEGORY_ORDER.map((cat) => {
+                if (assignCategoryFilter !== "all" && assignCategoryFilter !== cat) {
+                  return null;
+                }
+                const list = assignModalGrouped[cat] || [];
+                return (
+                  <div key={cat}>
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 pb-1 border-b border-gray-100">
+                      {ASSIGN_CATEGORY_HEADINGS[cat]}
+                    </h4>
+                    {list.length === 0 ? (
+                      <p className="text-sm text-gray-400 py-2">No admins in this category</p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {list.map((admin) => (
+                          <li key={admin._id}>
+                            <button
+                              type="button"
+                              onClick={() => confirmAssignAdmin(admin.name)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                assignModalInquiry.assignedTo === admin.name
+                                  ? "bg-blue-50 text-blue-900 ring-1 ring-blue-200"
+                                  : "bg-gray-50 text-gray-900 hover:bg-blue-50 hover:text-blue-900"
+                              }`}
+                            >
+                              {admin.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="p-5 border-t border-gray-100 flex flex-wrap justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={confirmUnassign}
+                className="px-4 py-2 text-amber-800 bg-amber-50 rounded-lg hover:bg-amber-100 text-sm font-medium"
+              >
+                Unassign
+              </button>
+              <button
+                type="button"
+                onClick={closeAssignModal}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete selected – password confirmation modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 top-[-50px] z-50 flex items-center justify-center bg-black/50">
@@ -1055,7 +1234,7 @@ const BusinessDirectory = ({ onEditCard }) => {
                 setDeleteError("");
               }}
               placeholder="Your password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mb-2"
               autoFocus
             />
             {deleteError && (

@@ -39,7 +39,7 @@ const adminSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["corporate", "individual"],
+    enum: ["in-house", "corporate", "individual"],
     default: "individual",
   },
   costPerCard: {

@@ -3,6 +3,12 @@ import Inquiry from '../models/Inquiry.js';
 import Card from '../models/Card.js';
 import User from '../models/User.js';
 
+const ADMIN_TYPES = ['in-house', 'corporate', 'individual'];
+
+function isValidAdminType(type) {
+  return type && ADMIN_TYPES.includes(type);
+}
+
 // Get all admins (superadmin only)
 export const getAllAdmins = async (req, res) => {
   try {
@@ -67,7 +73,10 @@ export const createAdmin = async (req, res) => {
     if (!name || !password) {
       return res.status(400).json({ error: 'Name and password are required' });
     }
-    
+    if (type && !isValidAdminType(type)) {
+      return res.status(400).json({ error: 'Invalid admin type' });
+    }
+
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ name });
     if (existingAdmin) {
@@ -96,23 +105,56 @@ export const createAdmin = async (req, res) => {
   }
 };
 
-// Update admin (superadmin only)
+// Update admin password only (superadmin only)
+export const updateAdminPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const admin = await Admin.findById(id).select('+password');
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    admin.password = password;
+    await admin.save();
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Update admin profile/settings (superadmin only) — password not required; use updateAdminPassword to change password
 export const updateAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, password, isActive, type, costPerCard, walletBalance } = req.body;
-    
-    const admin = await Admin.findById(id).select("+password");
-    
+    const { name, isActive, type, costPerCard } = req.body;
+
+    const admin = await Admin.findById(id);
+
     if (!admin) {
       return res.status(404).json({ error: 'Admin not found' });
     }
     if (name) admin.name = name;
-    if (password) admin.password = password;
     if (typeof isActive === 'boolean') admin.isActive = isActive;
-    if (type) admin.type = type;
+    if (typeof type !== 'undefined' && type !== null && type !== '') {
+      if (!isValidAdminType(type)) {
+        return res.status(400).json({ error: 'Invalid admin type' });
+      }
+      admin.type = type;
+    }
     if (typeof costPerCard !== "undefined") admin.costPerCard = costPerCard;
-    if (typeof walletBalance !== "undefined") admin.walletBalance = walletBalance;
     await admin.save();
     
     res.json({

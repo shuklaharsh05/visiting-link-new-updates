@@ -4,6 +4,7 @@ import {
   getAdminById,
   createAdmin,
   updateAdmin,
+  updateAdminPassword,
   deleteAdmin,
   assignInquiry,
   getAdminInquiries,
@@ -25,6 +26,7 @@ router.put('/assign/:inquiryId', requireSuperAdmin, assignInquiry);
 router.get('/', requireSuperAdmin, getAllAdmins);
 router.get('/:id', requireSuperAdmin, getAdminById);
 router.post('/', requireSuperAdmin, createAdmin);
+router.put('/:id/password', requireSuperAdmin, updateAdminPassword);
 router.put('/:id', requireSuperAdmin, updateAdmin);
 router.delete('/:id', requireSuperAdmin, deleteAdmin);
 

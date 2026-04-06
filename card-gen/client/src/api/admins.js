@@ -51,10 +51,20 @@ export const adminAPI = {
     }
   },
 
-  // Update admin
+  // Update admin (profile / settings — not password)
   updateAdmin: async (id, adminData) => {
     try {
       const response = await api.put(`/admins/${id}`, adminData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update admin password only
+  updateAdminPassword: async (id, password) => {
+    try {
+      const response = await api.put(`/admins/${id}/password`, { password });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
