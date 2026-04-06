@@ -291,7 +291,7 @@ export default function Appointments() {
   // Plan gating removed (isPro forced true above). Keeping legacy UI unreachable.
   if (!isPro) {
     return (
-      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
         {showPlanModal && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
@@ -547,7 +547,7 @@ export default function Appointments() {
   };
 
   return (
-    <div className="max-w-[95rem] mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

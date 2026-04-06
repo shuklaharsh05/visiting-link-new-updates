@@ -85,16 +85,9 @@ const PublicCardViewer = () => {
   const fetchCard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/cards/${cardId}`);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Card not found");
-        }
-        throw new Error("Failed to fetch card");
-      }
-
-      const data = await response.json();
+      // Use authenticatedFetch so logged-in users/admins can view private cards they own/manage.
+      // Falls back gracefully: if there's no token, authenticatedFetch still works for public cards.
+      const data = await authenticatedFetch(`/cards/${cardId}`);
       // console.log('Card data received:', data);
       // console.log('Card structure:', {
       //   hasCard: !!data.card,
@@ -109,7 +102,7 @@ const PublicCardViewer = () => {
       await updateViewCount();
     } catch (err) {
       // console.error('Error fetching card:', err);
-      setError(err.message);
+      setError(err?.message || "Failed to fetch card");
     } finally {
       setLoading(false);
     }

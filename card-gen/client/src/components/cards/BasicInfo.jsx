@@ -253,7 +253,7 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                         </div>
 
 
-                        <div className="space-y-2 mt-7">
+                        <div className="space-y-2 mt-7 max-w-80 mx-auto">
                             <a href={`tel:${cardData.number}`} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
                                 <Phone className="h-4 w-4" />
                                 <span className="text-sm font-light">Call Us</span>

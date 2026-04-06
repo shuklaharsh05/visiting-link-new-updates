@@ -91,14 +91,8 @@ export const getCardById = async (req, res) => {
   try {
     const card = await Card.findById(req.params.id);
     if (!card) return res.status(404).json({ error: "Card not found" });
-    const uid = String(req?.user?._id || req?.user?.id || "");
-    const isOwner =
-      (card.createdBy && String(card.createdBy) === uid) ||
-      (card.userId && String(card.userId) === uid);
-    const isAdmin = req?.user?.role === "admin" || req?.user?.role === "superadmin";
-    if (!card.isPublic && !isOwner && !isAdmin) {
-      return res.status(403).json({ error: "Card is private" });
-    }
+    // Shareable links must be viewable by anyone (even unauthenticated users).
+    // We still keep optionalAuth on the route, but we intentionally do not block access here.
 
     // Note: view count is handled exclusively by the /:id/view endpoint to avoid race conditions
 

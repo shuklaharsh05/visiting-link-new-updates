@@ -138,11 +138,11 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                 </div>
             </div>
 
-            <div className="px-12 py-12 rounded-[35px]" style={{background: 'linear-gradient(180deg, #9C9BC2 15%, #431D71 100%)'}}>
+            <div className="px-12 py-12 rounded-[35px]" style={{ background: 'linear-gradient(180deg, #9C9BC2 15%, #431D71 100%)' }}>
                 <div className="flex items-center justify-between">
                     <div>
                         <img src='/company-profile/hello.png' alt="Profile" className="w-32" />
-                       
+
                     </div>
                     <div>
                         <img src='/company-profile/share.png' alt="Profile" />
@@ -168,129 +168,131 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
             <div className="p-5 space-y-5">
 
 
-                {/* Google Reviews */}
-                {!isHidden("googleReviewLink") && googleReviewUrl ? (
-                    <a
-                        href={googleReviewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-gradient-to-br from-[#9C9BC2] to-[#431D71] px-4 pt-8 pb-24 rounded-[35px] flex items-center justify-center -mb-20"
-                    >
-                        <img src="/company-profile/google-reviews.png" alt="Google Review" className="w-full max-w-80 mx-auto rounded-3xl" />
-                    </a>
-                ) : null}
+                <div>
+                    {/* Google Reviews */}
+                    {!isHidden("googleReviewLink") && googleReviewUrl ? (
+                        <a
+                            href={googleReviewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-gradient-to-br from-[#9C9BC2] to-[#431D71] px-4 pt-8 pb-24 rounded-[35px] flex items-center justify-center -mb-20"
+                        >
+                            <img src="/company-profile/google-reviews.png" alt="Google Review" className="w-full max-w-80 mx-auto rounded-3xl" />
+                        </a>
+                    ) : null}
 
-                {/* Social links */}
-                {!isHidden("socialLinks") && cardData.socialLinks && (
-                    <div className="mb-6 py-6 px-4 border border-black rounded-[35px] bg-white">
-                        <h4 className="text-center text-xl font-bold text-black mb-4 flex items-center justify-center gap-2">
-                            <span className="text-3xl">#</span>
-                            All Social Media links
-                        </h4>
-                        <div className="grid grid-cols-3 gap-3 px-4">
-                            {cardData.socialLinks.instagram && (
-                                <a
-                                    href={cardData.socialLinks.instagram}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className=""
-                                >
-                                    {/* <Instagram className="w-12 h-12" /> */}
-                                    {/* <img src="/icons/instagram-icon.svg" alt="Instagram" className="w-12 h-12" />
+                    {/* Social links */}
+                    {!isHidden("socialLinks") && cardData.socialLinks && (
+                        <div className="mb-6 py-6 px-4 border border-black rounded-[35px] bg-white">
+                            <h4 className="text-center text-xl font-bold text-black mb-4 flex items-center justify-center gap-2">
+                                <span className="text-3xl">#</span>
+                                All Social Media links
+                            </h4>
+                            <div className="grid grid-cols-3 gap-3 px-4">
+                                {cardData.socialLinks.instagram && (
+                                    <a
+                                        href={cardData.socialLinks.instagram}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className=""
+                                    >
+                                        {/* <Instagram className="w-12 h-12" /> */}
+                                        {/* <img src="/icons/instagram-icon.svg" alt="Instagram" className="w-12 h-12" />
                       <span>Instagram</span> */}
-                                    <img src="/icons/insta.png" alt="Instagram" className="w-full h-full object-contain" />
+                                        <img src="/icons/insta.png" alt="Instagram" className="w-full h-full object-contain" />
+                                    </a>
+                                )}
+                                {cardData.socialLinks.linkedin && (
+                                    <a
+                                        href={cardData.socialLinks.linkedin}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className=""
+                                    >
+                                        {/* <Linkedin className="w-12 h-12" /> */}
+                                        <img src="/icons/li.png" alt="LinkedIn" className="w-full h-full object-contain" />
+                                    </a>
+                                )}
+                                {cardData.socialLinks.facebook && (
+                                    <a
+                                        href={cardData.socialLinks.facebook}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className=""
+                                    >
+                                        {/* <Facebook className="w-12 h-12" /> */}
+                                        <img src="/icons/fb.png" alt="Facebook" className="w-full h-full object-contain" />
+                                    </a>
+                                )}
+                                {cardData.socialLinks.twitter && (
+                                    <a
+                                        href={cardData.socialLinks.twitter}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className=""
+                                    >
+                                        {/* <Twitter className="w-12 h-12" /> */}
+                                        <img src="/icons/x.png" alt="Twitter" className="w-full h-full object-contain" />
+                                    </a>
+                                )}
+                                {cardData.socialLinks.youtube && (
+                                    <a
+                                        href={cardData.socialLinks.youtube}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className=""
+                                    >
+                                        {/* <Youtube className="w-12 h-12" /> */}
+                                        <img src="/icons/yt.png" alt="YouTube" className="w-full h-full object-contain" />
+                                        {/* <span>YouTube</span> */}
+                                    </a>
+                                )}
+                                {cardData.socialLinks.behance && (
+                                    <a
+                                        href={cardData.socialLinks.behance}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center flex-col justify-center gap-1 px-4 py-1 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 transition-colors"
+                                    >
+                                        {/* <Behance className="w-12 h-12" /> */}
+                                        <img src="/icons/behance-icon.svg" alt="Behance" className="w-14 h-14 mt-3" />
+                                        <span className="text-[8px] font-semibold">Behance</span>
+                                    </a>
+                                )}
+                                {cardData.socialLinks.pinterest && (
+                                    <a
+                                        href={cardData.socialLinks.pinterest}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center flex-col justify-center gap-1 px-4 py-1 bg-red-500 text-white rounded-2xl hover:bg-red-600 transition-colors"
+                                    >
+                                        {/* <Pinterest className="w-12 h-12" /> */}
+                                        <img src="/icons/pinterest-icon.svg" alt="Pinterest" className="w-14 h-14 mt-3 mb-1" />
+                                        <span className="text-[8px] font-semibold">Pinterest</span>
+                                    </a>
+                                )}
+
+                            </div>
+
+
+                            <div className="space-y-2 mt-7 max-w-80 mx-auto">
+                                <a href={`tel:${cardData.number}`} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
+                                    <Phone className="h-4 w-4" />
+                                    <span className="text-sm font-light">Call Us</span>
                                 </a>
-                            )}
-                            {cardData.socialLinks.linkedin && (
-                                <a
-                                    href={cardData.socialLinks.linkedin}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className=""
-                                >
-                                    {/* <Linkedin className="w-12 h-12" /> */}
-                                    <img src="/icons/li.png" alt="LinkedIn" className="w-full h-full object-contain" />
+                                <a href={`mailto:${cardData.email}`} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
+                                    <Mail className="h-4 w-4" />
+                                    <span className="text-sm font-light">Email</span>
                                 </a>
-                            )}
-                            {cardData.socialLinks.facebook && (
-                                <a
-                                    href={cardData.socialLinks.facebook}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className=""
-                                >
-                                    {/* <Facebook className="w-12 h-12" /> */}
-                                    <img src="/icons/fb.png" alt="Facebook" className="w-full h-full object-contain" />
+                                <a href={cardData.website} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
+                                    <Globe className="h-4 w-4" />
+                                    <span className="text-sm font-light">Website</span>
                                 </a>
-                            )}
-                            {cardData.socialLinks.twitter && (
-                                <a
-                                    href={cardData.socialLinks.twitter}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className=""
-                                >
-                                    {/* <Twitter className="w-12 h-12" /> */}
-                                    <img src="/icons/x.png" alt="Twitter" className="w-full h-full object-contain" />
-                                </a>
-                            )}
-                            {cardData.socialLinks.youtube && (
-                                <a
-                                    href={cardData.socialLinks.youtube}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className=""
-                                >
-                                    {/* <Youtube className="w-12 h-12" /> */}
-                                    <img src="/icons/yt.png" alt="YouTube" className="w-full h-full object-contain" />
-                                    {/* <span>YouTube</span> */}
-                                </a>
-                            )}
-                            {cardData.socialLinks.behance && (
-                                <a
-                                    href={cardData.socialLinks.behance}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center flex-col justify-center gap-1 px-4 py-1 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 transition-colors"
-                                >
-                                    {/* <Behance className="w-12 h-12" /> */}
-                                    <img src="/icons/behance-icon.svg" alt="Behance" className="w-14 h-14 mt-3" />
-                                    <span className="text-[8px] font-semibold">Behance</span>
-                                </a>
-                            )}
-                            {cardData.socialLinks.pinterest && (
-                                <a
-                                    href={cardData.socialLinks.pinterest}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center flex-col justify-center gap-1 px-4 py-1 bg-red-500 text-white rounded-2xl hover:bg-red-600 transition-colors"
-                                >
-                                    {/* <Pinterest className="w-12 h-12" /> */}
-                                    <img src="/icons/pinterest-icon.svg" alt="Pinterest" className="w-14 h-14 mt-3 mb-1" />
-                                    <span className="text-[8px] font-semibold">Pinterest</span>
-                                </a>
-                            )}
+                            </div>
 
                         </div>
-
-
-                        <div className="space-y-2 mt-7">
-                            <a href={`tel:${cardData.number}`} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
-                                <Phone className="h-4 w-4" />
-                                <span className="text-sm font-light">Call Us</span>
-                            </a>
-                            <a href={`mailto:${cardData.email}`} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
-                                <Mail className="h-4 w-4" />
-                                <span className="text-sm font-light">Email</span>
-                            </a>
-                            <a href={cardData.website} className="flex items-center justify-center gap-2 rounded-xl bg-black text-white px-4 py-2">
-                                <Globe className="h-4 w-4" />
-                                <span className="text-sm font-light">Website</span>
-                            </a>
-                        </div>
-
-                    </div>
-                )}
+                    )}
+                </div>
 
 
                 <div>

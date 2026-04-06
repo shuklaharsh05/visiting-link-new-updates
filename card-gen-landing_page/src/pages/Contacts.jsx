@@ -126,7 +126,7 @@ export default function Contacts() {
 
   if (!user) {
     return (
-      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex gap-3">
           <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
@@ -226,7 +226,7 @@ export default function Contacts() {
 
   function renderUpgradePrompt() {
     return (
-      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-3">
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -613,7 +613,7 @@ export default function Contacts() {
   });
 
   return (
-    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
           <div className="w-full sm:w-auto lg:max-w-72 xl:max-w-[20rem] 2xl:max-w-96">

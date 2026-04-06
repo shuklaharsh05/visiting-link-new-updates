@@ -235,12 +235,10 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                       </button>
                       <button
                         type="button"
-                        onClick={() =>
-                          onEditCardForUser && onEditCardForUser(selectedUser, c._id)
-                        }
+                        onClick={() => window.open(c.shareableLink, "_blank")}
                         className="flex-1 min-w-[100px] px-3 py-2 rounded-lg border border-gray-300 text-xs font-medium"
                       >
-                        Open
+                         Open Card
                       </button>
                       <button
                         type="button"

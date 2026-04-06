@@ -66,17 +66,17 @@ export default function InterestedCandidates() {
   }, [leads, searchQuery]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-xl bg-blue-100 text-blue-700">
+          {/* <div className="p-2 rounded-xl bg-blue-100 text-blue-700">
             <ClipboardList className="w-7 h-7" />
-          </div>
+          </div> */}
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-1">
               Interested candidates
             </h1>
-            <p className="text-slate-600 text-sm mt-0.5">
+            <p className="text-slate-600 text-sm sm:text-base">
               People who entered their details before downloading your VCF
               contact card.
             </p>

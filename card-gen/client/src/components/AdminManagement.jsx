@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { adminAPI } from '../api/admins';
 import { useToast } from '../contexts/ToastContext';
+import { Trash2 } from 'lucide-react';
 
 const ADMIN_TYPE_OPTIONS = [
   { value: 'in-house', label: 'In-House Admin' },
@@ -582,27 +583,27 @@ const AdminManagement = () => {
                                 : 'Never'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-wrap gap-4 items-center justify-center">
                                 <button
                                   type="button"
                                   onClick={() => handleEdit(admin)}
-                                  className="text-blue-600 hover:text-blue-900"
+                                  className="text-blue-600 hover:text-blue-900 text-[13px] hover:underline"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => openPasswordModal(admin)}
-                                  className="text-gray-700 hover:text-gray-900"
+                                  className="text-gray-700 hover:text-gray-900 text-[13px] hover:underline"
                                 >
                                   Change Password
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleDelete(admin)}
-                                  className="text-red-600 hover:text-red-900"
+                                  className="text-red-600 hover:text-red-900 ml-6"
                                 >
-                                  Delete
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>

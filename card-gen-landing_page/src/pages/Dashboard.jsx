@@ -151,7 +151,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8">
+    <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
       <div className="mb-8 flex flex-col sm:flex-row items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">
