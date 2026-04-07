@@ -406,6 +406,8 @@ export default function MyCard() {
               key={card._id}
               className="border border-slate-200 rounded-2xl p-4 flex flex-col justify-between bg-white"
             >
+              <div className="flex items-center gap-2">
+                <img src={card.data?.logo || card.data?.media || ""} alt={card.name || card.data?.CompanyName || card.data?.name || "Untitled card"} className="w-16 h-16 rounded-full" />
               <div>
                 <h2 className="text-sm font-semibold text-slate-900 mb-1">
                   {card.name || card.data?.CompanyName || card.data?.name || "Untitled card"}
@@ -421,6 +423,7 @@ export default function MyCard() {
                     </>
                   ) : null}
                 </p>
+              </div>
               </div>
               <div className="mt-3 flex gap-2">
                 <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Save,
@@ -36,6 +36,13 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
   const [mediaDefaultTab, setMediaDefaultTab] = useState("image");
   const [mediaMultiSelect, setMediaMultiSelect] = useState(false);
   const [assetRefs, setAssetRefs] = useState({});
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const userFilePickerRef = useRef(null);
+  const [userFilePicker, setUserFilePicker] = useState({
+    accept: "image/*",
+    multiple: false,
+    mediaType: "image",
+  });
 
   const categoryId = selectedTemplate?.categoryId || existingCard?.categoryId;
   const templateId =
@@ -203,10 +210,78 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
   };
 
   const openMediaForField = (fieldName, defaultTab = "image", options = {}) => {
+    const tab = defaultTab || "image";
+    const multi = options?.multiSelect ?? false;
+    const accept =
+      tab === "pdf"
+        ? "application/pdf"
+        : tab === "video"
+          ? "video/*"
+          : "image/*";
+
+    // User flow: open native file picker directly (no media library UI).
     setMediaTargetField(fieldName);
-    setMediaDefaultTab(defaultTab || "image");
-    setMediaMultiSelect(options?.multiSelect ?? false);
-    setMediaOpen(true);
+    setMediaDefaultTab(tab);
+    setMediaMultiSelect(!!multi);
+    setUserFilePicker({ accept, multiple: !!multi, mediaType: tab });
+    setTimeout(() => userFilePickerRef.current?.click(), 0);
+  };
+
+  const handleUserPickedFiles = async (e) => {
+    const picked = Array.from(e.target.files || []);
+    // allow re-picking same file next time
+    e.target.value = "";
+    if (picked.length === 0) return;
+    if (!mediaTargetField) return;
+
+    setSaving(true);
+    setMediaUploading(true);
+    setError("");
+    try {
+      const type = userFilePicker.mediaType || "image";
+
+      if (userFilePicker.multiple) {
+        const res = await apiService.uploadMultipleMedia(picked, {
+          type,
+          customFolder: "user-cards",
+        });
+        if (!res.success) {
+          setError(res.error || "Upload failed");
+          return;
+        }
+        const medias = (res.results || [])
+          .map((r) => r?.media)
+          .filter((m) => m && m.url);
+        if (medias.length === 0) {
+          setError("Upload failed");
+          return;
+        }
+        handleMediaSelect(medias);
+        return;
+      }
+
+      const file = picked[0];
+      const replacePublicId = assetRefs[mediaTargetField] || "";
+      const res = await apiService.uploadMedia(file, {
+        type,
+        customFolder: "user-cards",
+        replacePublicId,
+      });
+      if (!res.success || !res.media?.url) {
+        setError(res.error || "Upload failed");
+        return;
+      }
+      const media = res.media;
+      if (media.publicId) {
+        setAssetRefs((prev) => ({ ...prev, [mediaTargetField]: media.publicId }));
+      }
+      handleMediaSelect(media);
+    } catch (err) {
+      setError(err?.message || "Upload failed");
+    } finally {
+      setSaving(false);
+      setMediaUploading(false);
+    }
   };
 
   const handleMediaSelect = (media) => {
@@ -507,7 +582,7 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
           <div key={fieldName} className={blockClass}>
             {labelBlock(fieldConfig.label)}
             {!isCollapsed && (
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => openMediaForField(fieldName, "image")}
@@ -524,6 +599,9 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
                     onChange={(e) => uploadFieldImage(fieldName, e.target.files?.[0], "image")}
                   />
                 </label>
+                {mediaUploading && mediaTargetField === fieldName && (
+                  <span className="text-sm text-slate-600">Uploading file…</span>
+                )}
                 {value && (
                   <>
                     <img src={value} alt={fieldConfig.label} className="h-12 w-12 object-cover rounded border" />
@@ -656,7 +734,18 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
                                           />
                                         ) : pSubConfig.type === "image" ? (
                                           <div className="flex items-center gap-2">
-                                            <button type="button" onClick={() => { setMediaTargetField(`${fieldName}[${idx}].${subField}[${nIdx}].${pSubField}`); setMediaOpen(true); }} className="px-2 py-1 text-xs bg-purple-600 text-white rounded">Select</button>
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                openMediaForField(
+                                                  `${fieldName}[${idx}].${subField}[${nIdx}].${pSubField}`,
+                                                  "image"
+                                                )
+                                              }
+                                              className="px-2 py-1 text-xs bg-purple-600 text-white rounded"
+                                            >
+                                              Select
+                                            </button>
                                             <label className="px-2 py-1 text-xs bg-emerald-600 text-white rounded cursor-pointer">
                                               Upload
                                               <input
@@ -690,7 +779,13 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
                                 {fieldName === "galleryCategories" && subField === "images" && (
                                   <button
                                     type="button"
-                                    onClick={() => { setMediaTargetField(`${fieldName}[${idx}].${subField}`); setMediaDefaultTab("image"); setMediaMultiSelect(true); setMediaOpen(true); }}
+                                    onClick={() =>
+                                      openMediaForField(
+                                        `${fieldName}[${idx}].${subField}`,
+                                        "image",
+                                        { multiSelect: true }
+                                      )
+                                    }
                                     className="ml-2 px-2 py-1 text-xs bg-purple-600 text-white rounded"
                                   >
                                     Select images for this category
@@ -722,7 +817,18 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
                             return (
                               <div key={subField} className="flex items-center gap-2">
                                 <label className="block text-xs font-medium text-gray-600">{subConfig.label}</label>
-                                <button type="button" onClick={() => { setMediaTargetField(`${fieldName}[${idx}].${subField}`); setMediaOpen(true); }} className="px-2 py-1 text-xs bg-purple-600 text-white rounded">Select</button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openMediaForField(
+                                      `${fieldName}[${idx}].${subField}`,
+                                      "image"
+                                    )
+                                  }
+                                  className="px-2 py-1 text-xs bg-purple-600 text-white rounded"
+                                >
+                                  Select
+                                </button>
                                 <label className="px-2 py-1 text-xs bg-emerald-600 text-white rounded cursor-pointer">
                                   Upload
                                   <input
@@ -890,12 +996,23 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
         )
       )}
 
+      {/* User: direct file picker (no media library) */}
+      <input
+        ref={userFilePickerRef}
+        type="file"
+        accept={userFilePicker.accept}
+        multiple={userFilePicker.multiple}
+        className="hidden"
+        onChange={handleUserPickedFiles}
+      />
+
       <MediaManager
         isOpen={mediaOpen}
         onClose={() => { setMediaOpen(false); setMediaTargetField(null); setMediaMultiSelect(false); }}
         onSelect={handleMediaSelect}
         defaultTab={mediaDefaultTab}
         multiSelect={mediaMultiSelect}
+        enableLibrary={false}
       />
     </div>
   );

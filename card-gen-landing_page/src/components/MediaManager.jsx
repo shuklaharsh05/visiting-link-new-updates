@@ -41,6 +41,7 @@ export default function MediaManager({
   onSelect,
   defaultTab = "image",
   multiSelect = false,
+  enableLibrary = true,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [currentFolder, setCurrentFolder] = useState("");
@@ -62,6 +63,7 @@ export default function MediaManager({
 
   const load = useCallback(async () => {
     if (!isOpen) return;
+    if (!enableLibrary) return;
     setLoading(true);
     try {
       const res = await apiService.listMedia({
@@ -75,7 +77,7 @@ export default function MediaManager({
     } finally {
       setLoading(false);
     }
-  }, [isOpen, activeTab, currentFolder, q]);
+  }, [isOpen, activeTab, currentFolder, q, enableLibrary]);
 
   useEffect(() => {
     load();
@@ -142,7 +144,21 @@ export default function MediaManager({
       });
       if (res.success) {
         setUploadFiles([]);
-        load();
+        if (enableLibrary) {
+          load();
+        }
+
+        const medias = (res.results || [])
+          .map((r) => r?.media)
+          .filter((m) => m && m.url);
+        if (!enableLibrary && medias.length > 0) {
+          if (multiSelect) {
+            onSelect?.(medias);
+          } else {
+            onSelect?.(medias[medias.length - 1]);
+          }
+          onClose?.();
+        }
       }
     } finally {
       setUploading(false);
@@ -237,8 +253,8 @@ export default function MediaManager({
           </button>
         </div>
 
-        {/* Paste URL (single image) */}
-        {activeTab === "image" && !multiSelect && (
+        {/* Paste URL (single image) - library mode only */}
+        {enableLibrary && activeTab === "image" && !multiSelect && (
           <div className="px-6 py-3 border-b border-slate-100 bg-slate-50">
             <p className="text-xs font-medium text-slate-600 mb-2">Or paste image URL</p>
             <div className="flex gap-2 flex-wrap">
@@ -263,28 +279,32 @@ export default function MediaManager({
 
         {/* Upload bar */}
         <div className="px-6 py-3 border-b border-slate-200 flex flex-wrap items-center gap-3">
-          <select
-            value={activeTab}
-            onChange={(e) => { setActiveTab(e.target.value); setCurrentFolder(""); setUploadFolder(""); }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
-          >
-            {MEDIA_TABS.map((t) => (
-              <option key={t.id} value={t.id}>{t.label}</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={uploadFolder}
-            onChange={(e) => setUploadFolder(e.target.value)}
-            placeholder="Folder (optional)"
-            className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm"
-          />
+          {enableLibrary && (
+            <>
+              <select
+                value={activeTab}
+                onChange={(e) => { setActiveTab(e.target.value); setCurrentFolder(""); setUploadFolder(""); }}
+                className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              >
+                {MEDIA_TABS.map((t) => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={uploadFolder}
+                onChange={(e) => setUploadFolder(e.target.value)}
+                placeholder="Folder (optional)"
+                className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              />
+            </>
+          )}
           <label className="cursor-pointer px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 inline-flex items-center gap-2">
             <Upload className="w-4 h-4" />
-            Choose files
+            Choose file{multiSelect ? "s" : ""}
             <input
               type="file"
-              multiple
+              multiple={!!multiSelect}
               accept={
                 activeTab === "pdf"
                   ? "application/pdf"
@@ -298,7 +318,7 @@ export default function MediaManager({
           </label>
           {uploadFiles.length > 0 && (
             <span className="text-sm text-slate-600">
-              {uploadFiles.length} file(s)
+              {uploadFiles.length} file(s) selected
             </span>
           )}
           <button
@@ -311,6 +331,7 @@ export default function MediaManager({
           </button>
         </div>
 
+        {enableLibrary ? (
         <div className="flex-1 flex min-h-0">
           {/* Sidebar - Folders */}
           <div className="w-56 border-r border-slate-200 flex flex-col bg-slate-50/50 overflow-hidden">
@@ -453,6 +474,9 @@ export default function MediaManager({
             </div>
           </div>
         </div>
+        ) : (
+          <div className="flex-1 min-h-0" />
+        )}
       </div>
 
       {/* New folder modal */}

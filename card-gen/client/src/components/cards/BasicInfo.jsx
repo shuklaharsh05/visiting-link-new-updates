@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Mail,
     Phone,
@@ -39,6 +39,21 @@ const SocialIcon = ({ kind }) => {
 
 export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
     const isHidden = (k) => hiddenFields?.includes?.(k);
+    const [theme, setTheme] = useState(() => {
+        try {
+            return localStorage.getItem("card-theme") === "dark" ? "dark" : "light";
+        } catch {
+            return "light";
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("card-theme", theme);
+        } catch {
+            // ignore
+        }
+    }, [theme]);
 
     const socials = cardData?.socialLinks || {};
     const socialLinks = useMemo(() => {
@@ -68,7 +83,20 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
     const catalogueUrl = safeUrl(cardData?.catalogue);
 
     return (
-        <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+        <div className={theme === "dark" ? "dark" : ""}>
+            <div className="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xl overflow-hidden">
+            <button
+                    type="button"
+                    onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                    className={`absolute right-3 top-2 z-20 w-[2.5rem] h-5 flex items-center rounded-full p-1 transition-colors duration-300 ${theme === "dark" ? "bg-slate-700" : "bg-gray-300"
+                        }`}
+                    aria-label="Toggle theme"
+                >
+                    <div
+                        className={`w-3 h-3 rounded-full bg-white shadow-md transform transition-transform duration-300 ${theme === "dark" ? "translate-x-5" : "translate-x-0"
+                            }`}
+                    />
+                </button>
 
             {!isHidden("announcementType") && cardData?.announcementType ? (
                 <div className="relative mt-4 rounded-2xl bg-black text-white/90 border border-white/15 px-6 pb-5 pt-7 text-xs font-medium">
@@ -81,16 +109,16 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                 </div>
             ) : null}
             {/* Header */}
-            <div className="relative bg-[#FCE9E3] px-5 pt-6 pb-5">
+            <div className="relative bg-[#FCE9E3] dark:bg-slate-800 px-5 pt-6 pb-5">
 
                 <div className="mt-3 mb-6">
                     {!isHidden("name") && (
-                        <div className="text-xl font-semibold text-black truncate">
+                        <div className="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
                             {cardData?.name || "Your Name"}
                         </div>
                     )}
                     {!isHidden("businessType") && (
-                        <div className="text-sm text-black mt-0.5 truncate">
+                        <div className="text-sm text-slate-900 dark:text-slate-100 mt-0.5 truncate">
                             {cardData?.businessType || "Business type"}
                         </div>
                     )}
@@ -112,17 +140,17 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
 
                         <div>
                             {!isHidden("number") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.number || "Your Number"}
                                 </div>
                             )}
                             {!isHidden("email") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.email || "Your Email"}
                                 </div>
                             )}
                             {!isHidden("website") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.website || "Your Website"}
                                 </div>
                             )}
@@ -157,12 +185,12 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
             </div>
 
             {/* Body */}
-            <div className="p-5 space-y-5">
+            <div className="p-5 space-y-5 bg-white dark:bg-slate-900">
 
                 {/* Social Links Section */}
                 {!isHidden("socialLinks") && cardData.socialLinks && (
                     <div className="mb-6 pt-4 px-4">
-                        <h4 className="text-center text-xl font-bold text-black mb-4 flex items-center justify-center gap-2">
+                        <h4 className="text-center text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center justify-center gap-2">
                             <span className="text-3xl">#</span>
                             All Social Media links
                         </h4>
@@ -276,8 +304,8 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                     {/* About */}
                     {!isHidden("aboutCompany") && cardData?.aboutCompany ? (
                         <div className="p-4">
-                            <div className="text-xl text-center font-semibold text-gray-900">About My Company</div>
-                            <div className="mt-2 text-[10px] leading-[1.5] text-center text-gray-700 whitespace-pre-line">
+                            <div className="text-xl text-center font-semibold text-gray-900 dark:text-slate-100">About My Company</div>
+                            <div className="mt-2 text-[10px] leading-[1.5] text-center text-gray-700 dark:text-slate-300 whitespace-pre-line">
                                 {cardData.aboutCompany}
                             </div>
                         </div>
@@ -302,12 +330,12 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                                 )}
                                 <div className="min-w-0">
                                     {!isHidden("founderName") && (
-                                        <div className="text-xl font-semibold leading-5 text-gray-900">
+                                        <div className="text-xl font-semibold leading-5 text-gray-900 dark:text-slate-100">
                                             {cardData.founderName || ""}
                                         </div>
                                     )}
                                     {!isHidden("founderDesignation") && (
-                                        <div className="text-xs text-gray-500 truncate">
+                                        <div className="text-xs text-gray-500 dark:text-slate-300 truncate">
                                             {cardData.founderDesignation || ""}
                                         </div>
                                     )}
@@ -331,7 +359,7 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                 {/* Catalogue */}
                 {!isHidden("catalogue") && catalogueUrl ? (
                     <div className="mb-6 pt-4 px-4">
-                    <div className="flex items-center justify-center border border-black rounded-[30px] px-4 py-6">
+                    <div className="flex items-center justify-center border border-black dark:border-slate-700 rounded-[30px] px-4 py-6">
                       <h4 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#151213] to-[#524EDA] flex items-center gap-2 mb-4">
                         Download our Catalogue
                       </h4>
@@ -358,7 +386,7 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                 {/* Addresses */}
                 {!isHidden("addresses") && addresses.length > 0 ? (
                     <div>
-                        <div className="text-xl font-semibold text-center text-gray-900 mt-12">We are located at</div>
+                        <div className="text-xl font-semibold text-center text-gray-900 dark:text-slate-100 mt-12">We are located at</div>
                         <div className="mt-3 space-y-2">
                             {addresses.map((a, idx) => (
                                <div
@@ -371,10 +399,10 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
                                  className="w-20"
                                />
                                <div>
-                                 <h5 className="font-semibold text-lg text-gray-900 mb-1 leading-[1.1]">
+                                 <h5 className="font-semibold text-lg text-gray-900 dark:text-slate-100 mb-1 leading-[1.1]">
                                    {a.city || "Your Landmark"}
                                  </h5>
-                                 <p className="text-[10px] text-gray-700 mb-2 leading-[1.15]">
+                                 <p className="text-[10px] text-gray-700 dark:text-slate-300 mb-2 leading-[1.15]">
                                    {a.address || "Address"}
                                  </p>
                                  {a.mapLink && (
@@ -428,6 +456,7 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
             </div>
 
             
+            </div>
         </div>
     );
 }

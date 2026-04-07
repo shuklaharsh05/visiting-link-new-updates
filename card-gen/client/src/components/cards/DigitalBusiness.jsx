@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Mail,
     Phone,
@@ -42,6 +42,21 @@ const SocialIcon = ({ kind }) => {
 
 export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
     const isHidden = (k) => hiddenFields?.includes?.(k);
+    const [theme, setTheme] = useState(() => {
+        try {
+            return localStorage.getItem("card-theme") === "dark" ? "dark" : "light";
+        } catch {
+            return "light";
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("card-theme", theme);
+        } catch {
+            // ignore
+        }
+    }, [theme]);
 
     const socials = cardData?.socialLinks || {};
     const socialLinks = useMemo(() => {
@@ -76,7 +91,16 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
     const youtubeVideoUrl = safeUrl(cardData?.youtubeVideo);
 
     return (
-        <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+        <div className={theme === "dark" ? "dark" : ""}>
+            <div className="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-xl overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                    className="absolute right-3 top-3 z-20 inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                    aria-label="Toggle theme"
+                >
+                    {theme === "dark" ? "Light" : "Dark"}
+                </button>
             {!isHidden("announcementType") && cardData?.announcementType ? (
                 <div className="relative mt-4 rounded-2xl bg-black text-white/90 border border-white/15 px-6 pb-5 pt-7 text-xs font-medium">
                     {/* <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> */}
@@ -88,16 +112,16 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                 </div>
             ) : null}
             {/* Header */}
-            <div className="relative bg-[#FCE9E3] px-5 pt-6 pb-5">
+            <div className="relative bg-[#FCE9E3] dark:bg-slate-800 px-5 pt-6 pb-5">
 
                 <div className="mt-3 mb-6">
                     {!isHidden("name") && (
-                        <div className="text-xl font-semibold text-black truncate">
+                        <div className="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
                             {cardData?.name || "Your Name"}
                         </div>
                     )}
                     {!isHidden("businessType") && (
-                        <div className="text-sm text-black mt-0.5 truncate">
+                        <div className="text-sm text-slate-900 dark:text-slate-100 mt-0.5 truncate">
                             {cardData?.businessType || "Business type"}
                         </div>
                     )}
@@ -119,17 +143,17 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
 
                         <div>
                             {!isHidden("number") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.number || "Your Number"}
                                 </div>
                             )}
                             {!isHidden("email") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.email || "Your Email"}
                                 </div>
                             )}
                             {!isHidden("website") && (
-                                <div className="text-base font-medium text-black truncate">
+                                <div className="text-base font-medium text-slate-900 dark:text-slate-100 truncate">
                                     {cardData?.website || "Your Website"}
                                 </div>
                             )}
@@ -165,7 +189,7 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
             </div>
 
             {/* Body */}
-            <div className="p-5 space-y-5">
+            <div className="p-5 space-y-5 bg-white dark:bg-slate-900">
 
 
                 <div>
@@ -183,8 +207,8 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
 
                     {/* Social links */}
                     {!isHidden("socialLinks") && cardData.socialLinks && (
-                        <div className="mb-6 py-6 px-4 border border-black rounded-[35px] bg-white">
-                            <h4 className="text-center text-xl font-bold text-black mb-4 flex items-center justify-center gap-2">
+                        <div className="mb-6 py-6 px-4 border border-black dark:border-slate-700 rounded-[35px] bg-white dark:bg-slate-900">
+                            <h4 className="text-center text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center justify-center gap-2">
                                 <span className="text-3xl">#</span>
                                 All Social Media links
                             </h4>
@@ -300,13 +324,13 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                         <div className="text-2xl text-center font-semibold text-white ">Claim 10 % Coupon </div>
                     </div>
 
-                    <div className="px-6 py-8 bg-white rounded-[35px] border border-black relative z-10">
+                    <div className="px-6 py-8 bg-white dark:bg-slate-900 rounded-[35px] border border-black dark:border-slate-700 relative z-10">
                         <form className="">
-                            <input type="text" placeholder="Enter your name" className="w-full rounded-full px-4 py-2 border border-gray-600 text-black" />
-                            <input type="tel" placeholder="Enter your phone number" className="w-full rounded-full px-4 py-2 border border-gray-600 text-black mt-2 mb-4" />
+                            <input type="text" placeholder="Enter your name" className="w-full rounded-full px-4 py-2 border border-gray-600 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+                            <input type="tel" placeholder="Enter your phone number" className="w-full rounded-full px-4 py-2 border border-gray-600 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 mt-2 mb-4" />
                             <button type="submit" className="bg-black text-white w-full py-2 rounded-full">Submit</button>
                         </form>
-                        <p className="text-xs text-center text-black mt-3">Submit the form to download this contact and claim your coupon</p>
+                        <p className="text-xs text-center text-slate-900 dark:text-slate-200 mt-3">Submit the form to download this contact and claim your coupon</p>
                     </div>
                 </div>
 
@@ -315,8 +339,8 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                     {/* About */}
                     {!isHidden("aboutCompany") && cardData?.aboutCompany ? (
                         <div className="p-4">
-                            <div className="text-xl text-center font-semibold text-gray-900">About My Company</div>
-                            <div className="mt-2 text-[10px] leading-[1.5] text-center text-gray-700 whitespace-pre-line">
+                            <div className="text-xl text-center font-semibold text-gray-900 dark:text-slate-100">About My Company</div>
+                            <div className="mt-2 text-[10px] leading-[1.5] text-center text-gray-700 dark:text-slate-300 whitespace-pre-line">
                                 {cardData.aboutCompany}
                             </div>
                         </div>
@@ -334,19 +358,19 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                                     <img
                                         src={cardData.founderImage}
                                         alt={cardData.founderName || "Founder"}
-                                        className="min-h-28 min-w-28 rounded-full object-cover"
+                                        className="min-h-28 max-h-28 min-w-28 max-w-28 rounded-full object-cover"
                                     />
                                 ) : (
-                                    <div className="min-h-28 min-w-28 rounded-full bg-gray-100" />
+                                    <div className="min-h-28 max-h-28 min-w-28 max-w-28 rounded-full bg-gray-100" />
                                 )}
                                 <div className="min-w-0">
                                     {!isHidden("founderName") && (
-                                        <div className="text-xl font-semibold leading-5 text-gray-900">
+                                        <div className="text-xl font-semibold leading-5 text-gray-900 dark:text-slate-100">
                                             {cardData.founderName || ""}
                                         </div>
                                     )}
                                     {!isHidden("founderDesignation") && (
-                                        <div className="text-xs text-gray-500 truncate">
+                                        <div className="text-xs text-gray-500 dark:text-slate-300 truncate">
                                             {cardData.founderDesignation || ""}
                                         </div>
                                     )}
@@ -370,7 +394,7 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                 {/* Catalogue */}
                 {!isHidden("catalogue") && catalogueUrl ? (
                     <div className="mb-6 pt-4 px-4">
-                        <div className="flex items-center justify-center border border-black rounded-[30px] px-4 py-6">
+                        <div className="flex items-center justify-center border border-black dark:border-slate-700 rounded-[30px] px-4 py-6">
                             <h4 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-[#151213] to-[#524EDA] flex items-center gap-2 mb-4">
                                 Download our Catalogue
                             </h4>
@@ -420,7 +444,7 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
                             ) : null}
                         </div>
                         {!isHidden("youtubeVideo") && youtubeVideoUrl ? (
-                            <div className="mb-6 mt-12 p-0.5 mx-4 bg-white rounded-xl relative z-10">
+                            <div className="mb-6 mt-12 p-0.5 mx-4 bg-white dark:bg-slate-900 rounded-xl relative z-10">
                                 <div
                                     className="relative w-full"
                                     style={{ paddingBottom: "56.25%" }}
@@ -514,6 +538,7 @@ export default function DigitalBusiness({ cardData = {}, hiddenFields = [] }) {
             </div>
 
 
+            </div>
         </div>
     );
 }

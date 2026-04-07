@@ -18,7 +18,7 @@ export const cardSchemas = {
         required: false,
         placeholder: "(interior designer, makeup artist, doctor, freelancer)",
       },
-      media: { type: "image", label: "Image / GIF", required: false },
+      logo: { type: "image", label: "Logo", required: false },
 
       heading: { type: "text", label: "Heading", required: false },
       subHeading: { type: "text", label: "Sub-Heading", required: false },
@@ -36,10 +36,18 @@ export const cardSchemas = {
         required: false,
       },
 
-      aboutCompany: { type: "textarea", label: "About Company", required: false },
+      aboutCompany: {
+        type: "textarea",
+        label: "About Company",
+        required: false,
+      },
 
       founderName: { type: "text", label: "Founder’s name", required: false },
-      founderImage: { type: "image", label: "Founder’s Image", required: false },
+      founderImage: {
+        type: "image",
+        label: "Founder’s Image",
+        required: false,
+      },
       founderDesignation: {
         type: "text",
         label: "Founder’s designation",
@@ -62,7 +70,11 @@ export const cardSchemas = {
         required: false,
       },
 
-      bottomHeadline: { type: "text", label: "Bottom Headline", required: false },
+      bottomHeadline: {
+        type: "text",
+        label: "Bottom Headline",
+        required: false,
+      },
       ctaText: { type: "textarea", label: "CTA Text", required: false },
     },
     sections: [
@@ -73,12 +85,16 @@ export const cardSchemas = {
           "announcementType",
           "name",
           "businessType",
-          "media",
+          "logo",
           "heading",
           "subHeading",
         ],
       },
-      { id: "contact", label: "Contact", fields: ["number", "email", "website"] },
+      {
+        id: "contact",
+        label: "Contact",
+        fields: ["number", "email", "website"],
+      },
       { id: "social", label: "Social links", fields: ["socialLinks"] },
       { id: "about", label: "About company", fields: ["aboutCompany"] },
       {
@@ -89,14 +105,22 @@ export const cardSchemas = {
       { id: "vision", label: "Vision", fields: ["vision"] },
       { id: "catalogue", label: "Catalogue", fields: ["catalogue"] },
       { id: "address", label: "Address", fields: ["addresses"] },
-      { id: "cta", label: "Bottom headline & CTA", fields: ["bottomHeadline", "ctaText"] },
+      {
+        id: "cta",
+        label: "Bottom headline & CTA",
+        fields: ["bottomHeadline", "ctaText"],
+      },
     ],
   },
 
   "digital-business": {
     name: "Digital Business",
     fields: {
-      announcementType: { type: "text", label: "Announcement type", required: false },
+      announcementType: {
+        type: "text",
+        label: "Announcement type",
+        required: false,
+      },
       name: { type: "text", label: "Name", required: true },
       number: { type: "tel", label: "Number", required: false },
       email: { type: "email", label: "Email", required: false },
@@ -107,12 +131,16 @@ export const cardSchemas = {
         required: false,
         placeholder: "(interior designer, makeup artist, doctor, freelancer)",
       },
-      media: { type: "image", label: "Image / GIF", required: false },
+      logo: { type: "image", label: "Logo", required: false },
 
       heading: { type: "text", label: "Heading", required: false },
       subHeading: { type: "text", label: "Sub-Heading", required: false },
 
-      googleReviewLink: { type: "url", label: "Google Review Link", required: false },
+      googleReviewLink: {
+        type: "url",
+        label: "Google Review Link",
+        required: false,
+      },
 
       socialLinks: {
         type: "object",
@@ -127,11 +155,23 @@ export const cardSchemas = {
         required: false,
       },
 
-      aboutCompany: { type: "textarea", label: "About Company", required: false },
+      aboutCompany: {
+        type: "textarea",
+        label: "About Company",
+        required: false,
+      },
 
       founderName: { type: "text", label: "Founder’s name", required: false },
-      founderImage: { type: "image", label: "Founder’s Image", required: false },
-      founderDesignation: { type: "text", label: "Founder’s designation", required: false },
+      founderImage: {
+        type: "image",
+        label: "Founder’s Image",
+        required: false,
+      },
+      founderDesignation: {
+        type: "text",
+        label: "Founder’s designation",
+        required: false,
+      },
 
       vision: { type: "textarea", label: "Vision", required: false },
       // Keep as "catalogue" for PDF upload helper UI.
@@ -139,7 +179,11 @@ export const cardSchemas = {
 
       playStoreUrl: { type: "url", label: "Google Play link", required: false },
       appStoreUrl: { type: "url", label: "App Store link", required: false },
-      youtubeVideo: { type: "url", label: "YouTube Video Link", required: false },
+      youtubeVideo: {
+        type: "url",
+        label: "YouTube Video Link",
+        required: false,
+      },
 
       addresses: {
         type: "array",
@@ -151,32 +195,63 @@ export const cardSchemas = {
         required: false,
       },
 
-      bottomHeadline: { type: "text", label: "Bottom Headline", required: false },
+      bottomHeadline: {
+        type: "text",
+        label: "Bottom Headline",
+        required: false,
+      },
       ctaText: { type: "textarea", label: "CTA Text", required: false },
     },
     sections: [
       {
         id: "basic",
         label: "Basic info",
-        fields: ["announcementType", "name", "businessType", "media", "heading", "subHeading"],
+        fields: [
+          "announcementType",
+          "name",
+          "businessType",
+          "logo",
+          "heading",
+          "subHeading",
+        ],
       },
-      { id: "contact", label: "Contact", fields: ["number", "email", "website"] },
+      {
+        id: "contact",
+        label: "Contact",
+        fields: ["number", "email", "website"],
+      },
       { id: "reviews", label: "Google reviews", fields: ["googleReviewLink"] },
       { id: "social", label: "Social links", fields: ["socialLinks"] },
       { id: "about", label: "About company", fields: ["aboutCompany"] },
-      { id: "founder", label: "Founder", fields: ["founderName", "founderImage", "founderDesignation"] },
+      {
+        id: "founder",
+        label: "Founder",
+        fields: ["founderName", "founderImage", "founderDesignation"],
+      },
       { id: "vision", label: "Vision", fields: ["vision"] },
       { id: "catalogue", label: "Catalogue", fields: ["catalogue"] },
-      { id: "apps", label: "App & video links", fields: ["playStoreUrl", "appStoreUrl", "youtubeVideo"] },
+      {
+        id: "apps",
+        label: "App & video links",
+        fields: ["playStoreUrl", "appStoreUrl", "youtubeVideo"],
+      },
       { id: "address", label: "Address", fields: ["addresses"] },
-      { id: "cta", label: "Bottom headline & CTA", fields: ["bottomHeadline", "ctaText"] },
+      {
+        id: "cta",
+        label: "Bottom headline & CTA",
+        fields: ["bottomHeadline", "ctaText"],
+      },
     ],
   },
 
   "company-profile": {
     name: "Company Profile",
     fields: {
-      announcementType: { type: "text", label: "Announcement type", required: false },
+      announcementType: {
+        type: "text",
+        label: "Announcement type",
+        required: false,
+      },
       name: { type: "text", label: "Name", required: true },
       number: { type: "tel", label: "Number", required: false },
       email: { type: "email", label: "Email", required: false },
@@ -187,12 +262,16 @@ export const cardSchemas = {
         required: false,
         placeholder: "(interior designer, makeup artist, doctor, freelancer)",
       },
-      media: { type: "image", label: "Image / GIF", required: false },
+      logo: { type: "image", label: "Logo", required: false },
 
       heading: { type: "text", label: "Heading", required: false },
       subHeading: { type: "text", label: "Sub-Heading", required: false },
 
-      googleReviewLink: { type: "url", label: "Google Review Link", required: false },
+      googleReviewLink: {
+        type: "url",
+        label: "Google Review Link",
+        required: false,
+      },
 
       socialLinks: {
         type: "object",
@@ -209,12 +288,28 @@ export const cardSchemas = {
 
       bannerImage: { type: "image", label: "Banner Image", required: false },
 
-      aboutCompany: { type: "textarea", label: "About Company", required: false },
+      aboutCompany: {
+        type: "textarea",
+        label: "About Company",
+        required: false,
+      },
 
       founderName: { type: "text", label: "Founder’s name", required: false },
-      founderImage: { type: "image", label: "Founder’s Image", required: false },
-      founderDesignation: { type: "text", label: "Founder’s designation", required: false },
-      founderMessage: { type: "textarea", label: "Founder’s Message", required: false },
+      founderImage: {
+        type: "image",
+        label: "Founder’s Image",
+        required: false,
+      },
+      founderDesignation: {
+        type: "text",
+        label: "Founder’s designation",
+        required: false,
+      },
+      founderMessage: {
+        type: "textarea",
+        label: "Founder’s Message",
+        required: false,
+      },
 
       vision: { type: "textarea", label: "Vision", required: false },
 
@@ -235,7 +330,11 @@ export const cardSchemas = {
         itemSchema: {
           image: { type: "image", label: "Service Image", required: false },
           heading: { type: "text", label: "Heading", required: false },
-          description: { type: "textarea", label: "Description", required: false },
+          description: {
+            type: "textarea",
+            label: "Description",
+            required: false,
+          },
           price: { type: "text", label: "Price", required: false },
           url: { type: "url", label: "URL", required: false },
         },
@@ -248,7 +347,11 @@ export const cardSchemas = {
         itemSchema: {
           image: { type: "image", label: "Product Image", required: false },
           name: { type: "text", label: "Name", required: false },
-          description: { type: "textarea", label: "Description", required: false },
+          description: {
+            type: "textarea",
+            label: "Description",
+            required: false,
+          },
           rating: {
             type: "select",
             label: "Rating (1-5)",
@@ -266,7 +369,11 @@ export const cardSchemas = {
 
       playStoreUrl: { type: "url", label: "Google Play link", required: false },
       appStoreUrl: { type: "url", label: "App Store link", required: false },
-      youtubeVideo: { type: "url", label: "YouTube Video Link", required: false },
+      youtubeVideo: {
+        type: "url",
+        label: "YouTube Video Link",
+        required: false,
+      },
 
       addresses: {
         type: "array",
@@ -278,16 +385,31 @@ export const cardSchemas = {
         required: false,
       },
 
-      bottomHeadline: { type: "text", label: "Bottom Headline", required: false },
+      bottomHeadline: {
+        type: "text",
+        label: "Bottom Headline",
+        required: false,
+      },
       ctaText: { type: "textarea", label: "CTA Text", required: false },
     },
     sections: [
       {
         id: "basic",
         label: "Basic info",
-        fields: ["announcementType", "name", "businessType", "media", "heading", "subHeading"],
+        fields: [
+          "announcementType",
+          "name",
+          "businessType",
+          "logo",
+          "heading",
+          "subHeading",
+        ],
       },
-      { id: "contact", label: "Contact", fields: ["number", "email", "website"] },
+      {
+        id: "contact",
+        label: "Contact",
+        fields: ["number", "email", "website"],
+      },
       { id: "reviews", label: "Google reviews", fields: ["googleReviewLink"] },
       { id: "social", label: "Social links", fields: ["socialLinks"] },
       { id: "banner", label: "Banner", fields: ["bannerImage"] },
@@ -295,16 +417,29 @@ export const cardSchemas = {
       {
         id: "founder",
         label: "Founder",
-        fields: ["founderName", "founderImage", "founderDesignation", "founderMessage"],
+        fields: [
+          "founderName",
+          "founderImage",
+          "founderDesignation",
+          "founderMessage",
+        ],
       },
       { id: "vision", label: "Vision", fields: ["vision"] },
       { id: "team", label: "Our team", fields: ["teamMembers"] },
       { id: "services", label: "Services", fields: ["services"] },
       { id: "products", label: "Products", fields: ["products"] },
       { id: "catalogue", label: "Catalogue", fields: ["catalogue"] },
-      { id: "apps", label: "App & video links", fields: ["playStoreUrl", "appStoreUrl", "youtubeVideo"] },
+      {
+        id: "apps",
+        label: "App & video links",
+        fields: ["playStoreUrl", "appStoreUrl", "youtubeVideo"],
+      },
       { id: "address", label: "Address", fields: ["addresses"] },
-      { id: "cta", label: "Bottom headline & CTA", fields: ["bottomHeadline", "ctaText"] },
+      {
+        id: "cta",
+        label: "Bottom headline & CTA",
+        fields: ["bottomHeadline", "ctaText"],
+      },
     ],
   },
 
@@ -980,16 +1115,31 @@ export const cardSchemas = {
     name: "Link Pro",
     fields: {
       // Basic Info
-      leftBgImage: { type: "image", label: "Left Background Image", required: false },
-      rightBgImage: { type: "image", label: "Right Background Image", required: false },
+      leftBgImage: {
+        type: "image",
+        label: "Left Background Image",
+        required: false,
+      },
+      rightBgImage: {
+        type: "image",
+        label: "Right Background Image",
+        required: false,
+      },
       logo: { type: "image", label: "Logo", required: false },
       CompanyName: { type: "text", label: "Company Name", required: true },
-      foundedYear: { type: "text", label: "Founded Year (Like 2020)", required: false },
+      foundedYear: {
+        type: "text",
+        label: "Founded Year (Like 2020)",
+        required: false,
+      },
       tagline: { type: "text", label: "Tagline", required: false },
 
-      heading:{type: "text", label: "We Deals In", required: false},
-      businessCategory:{type: "text", label: "Business Category", required: false},
-     
+      heading: { type: "text", label: "We Deals In", required: false },
+      businessCategory: {
+        type: "text",
+        label: "Business Category",
+        required: false,
+      },
 
       // Contact Info
       email: { type: "email", label: "Email", required: false },
@@ -1113,7 +1263,11 @@ export const cardSchemas = {
 
       // Banner
       banner: { type: "image", label: "Banner Image", required: false },
-      bannerLink: { type: "url", label: "Banner Link (Like https://www.google.com)", required: false },
+      bannerLink: {
+        type: "url",
+        label: "Banner Link (Like https://www.google.com)",
+        required: false,
+      },
 
       whyChooseUs: {
         type: "array",
@@ -1174,7 +1328,11 @@ export const cardSchemas = {
         type: "array",
         label: "Gallery Categories",
         itemSchema: {
-          category: { type: "text", label: "Gallery Category Name (e.g. Office, Design)", required: false },
+          category: {
+            type: "text",
+            label: "Gallery Category Name (e.g. Office, Design)",
+            required: false,
+          },
           images: {
             type: "array",
             label: "Category Images",
@@ -1197,19 +1355,33 @@ export const cardSchemas = {
         required: false,
       },
       // CTA
-      ctaTitle: { type: "text", label: "Text (Ready to Join us)", required: false },
-      ctaSubtitle: { type: "text", label: "Heading (Contact Us Today)", required: false },
+      ctaTitle: {
+        type: "text",
+        label: "Text (Ready to Join us)",
+        required: false,
+      },
+      ctaSubtitle: {
+        type: "text",
+        label: "Heading (Contact Us Today)",
+        required: false,
+      },
     },
     sections: [
       {
         id: "ImageSection",
         label: "Images (Logo, Background Images, Catalogue)",
-        fields: [ "logo", "leftBgImage", "rightBgImage", "catalogue"],
+        fields: ["logo", "leftBgImage", "rightBgImage", "catalogue"],
       },
       {
         id: "companyDetails",
         label: "Company details",
-        fields: ["CompanyName", "foundedYear", "tagline", "heading", "businessCategory"],
+        fields: [
+          "CompanyName",
+          "foundedYear",
+          "tagline",
+          "heading",
+          "businessCategory",
+        ],
       },
       {
         id: "contactDetails",
@@ -1224,7 +1396,14 @@ export const cardSchemas = {
       {
         id: "FounderDetails",
         label: "Founder details",
-        fields: ["founderImage", "founderName", "founderDescription", "founderMessage", "vission", "companyInfo"],
+        fields: [
+          "founderImage",
+          "founderName",
+          "founderDescription",
+          "founderMessage",
+          "vission",
+          "companyInfo",
+        ],
       },
       {
         id: "OurNumbers",
@@ -1241,7 +1420,7 @@ export const cardSchemas = {
         label: "Our Products",
         fields: ["ourProducts"],
       },
-      
+
       {
         id: "OurClients",
         label: "Our Clients",

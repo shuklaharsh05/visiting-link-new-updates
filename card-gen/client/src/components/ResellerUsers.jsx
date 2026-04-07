@@ -214,14 +214,15 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {userCards.map((c) => (
                   <div key={c._id} className="border border-gray-200 rounded-xl p-4">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {c.name || c.data?.CompanyName || c.data?.name || "Untitled card"}
+                    <div className="flex items-center gap-4">
+                      <img src={c.data?.logo || c.data?.media || ""} alt={c.name || c.data?.CompanyName || c.data?.name || "Untitled card"} className="w-16 h-16 rounded-full " />
+                    <div className="">
+                      <p className="text-base font-semibold text-gray-900">{c.name || c.data?.CompanyName || c.data?.name || "Untitled card"}</p>
+                    
+                      <p className="text-xs text-gray-500 mt-1">Card Type : {c.categoryId} card</p>
+                      <p className="text-xs text-gray-500">Updated {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : ""}</p>
+                      <p className="text-xs text-gray-500 mt-1">{c.lastEditedBy ? ` Edited by ${c.lastEditedBy}` : ""}</p>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Card Type : {c.categoryId} card
-                      <br />
-                      Updated {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : ""}
-                      {c.lastEditedBy ? ` · Edited by ${c.lastEditedBy}` : ""}
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
