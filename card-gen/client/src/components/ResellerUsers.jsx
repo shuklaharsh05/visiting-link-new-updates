@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { BarChart3, CalendarCheck2, Download, Eye, Heart, Pen, Share2, Trash2, X } from "lucide-react";
 import { resellerAPI } from "../api/reseller";
+import { walletAPI } from "../api/wallet";
+import { getCardAnalytics } from "../api/cards";
 import { useToast } from "../contexts/ToastContext";
 
 export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) {
   const { success: showSuccess, error: showError } = useToast();
   const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState(null);
   const [usersRes, setUsersRes] = useState({ users: [], pagination: null });
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
@@ -20,8 +24,16 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
   const [cardsLoading, setCardsLoading] = useState(false);
   const [userCards, setUserCards] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsCard, setStatsCard] = useState(null);
+  const [stats, setStats] = useState(null);
 
   const users = useMemo(() => usersRes?.data?.users || usersRes?.users || [], [usersRes]);
+
+  const walletBalance = Number(wallet?.walletBalance ?? 0);
+  const costPerCard = Number(wallet?.costPerCard ?? 0);
+  const hasSufficientWallet = costPerCard > 0 ? walletBalance >= costPerCard : true;
 
   const load = async () => {
     setLoading(true);
@@ -37,6 +49,13 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    walletAPI
+      .getMyWallet()
+      .then((res) => setWallet(res?.data ?? res ?? null))
+      .catch(() => null);
   }, []);
 
   useEffect(() => {
@@ -57,7 +76,7 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
       }
     };
     run();
-  }, [selectedUser?._id, showError]);
+  }, [selectedUser?._id]);
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -82,7 +101,38 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
       showError("Select a user first");
       return;
     }
+    if (!hasSufficientWallet) {
+      showError(
+        "Not enough wallet balance to create this card. Please recharge your wallet and try again."
+      );
+      return;
+    }
     if (onGenerateForUser) onGenerateForUser(selectedUser);
+  };
+
+  const handleViewStats = async (card) => {
+    if (!card?._id) return;
+    setStatsOpen(true);
+    setStatsCard(card);
+    setStats(null);
+    setStatsLoading(true);
+    try {
+      const res = await getCardAnalytics(card._id);
+      setStats(res || null);
+    } catch (e) {
+      showError(e?.message || "Failed to load analytics");
+      setStatsOpen(false);
+      setStatsCard(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const closeStats = () => {
+    setStatsOpen(false);
+    setStats(null);
+    setStatsCard(null);
+    setStatsLoading(false);
   };
 
   const handleDeleteCard = async (card) => {
@@ -196,8 +246,16 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
             <button
               type="button"
               onClick={goGenerate}
-              className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium disabled:opacity-50"
+              className={`px-4 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50 ${
+                !selectedUser ? "bg-gray-500" : "bg-gray-900"
+              } ${selectedUser && !hasSufficientWallet ? "opacity-60" : ""}`}
               disabled={!selectedUser}
+              aria-disabled={selectedUser && !hasSufficientWallet}
+              title={
+                !hasSufficientWallet && selectedUser
+                  ? `Insufficient balance. Balance ₹${walletBalance} / Cost ₹${costPerCard}`
+                  : undefined
+              }
             >
               + New card
             </button>
@@ -230,9 +288,9 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                         onClick={() =>
                           onEditCardForUser && onEditCardForUser(selectedUser, c._id)
                         }
-                        className="flex-1 min-w-[100px] px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium"
+                        className="min-w-[20px] px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium"
                       >
-                        Edit
+                        <Pen className="h-4 w-4" />
                       </button>
                       <button
                         type="button"
@@ -243,11 +301,19 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                       </button>
                       <button
                         type="button"
+                        onClick={() => handleViewStats(c)}
+                        className="flex-1 min-w-[100px] px-3 py-2 rounded-lg border border-gray-300 text-xs font-medium"
+                      >
+                        View Stats
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteCard(c)}
                         disabled={deletingId === c._id}
                         className="w-full sm:w-auto px-3 py-2 rounded-lg border border-red-200 text-red-700 text-xs font-medium hover:bg-red-50 disabled:opacity-50"
                       >
-                        {deletingId === c._id ? "Deleting…" : "Delete"}
+                        {/* {deletingId === c._id ? "Deleting…" : "Delete"} */}
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -259,7 +325,7 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
       </div>
 
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/50 px-4">
           <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-900">Create user</h3>
@@ -324,6 +390,95 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                 Create user
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {statsOpen && (
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl border border-gray-100">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-gray-900">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-base font-semibold">Card analytics</h3>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 truncate">
+                  {statsCard?.name ||
+                    statsCard?.data?.CompanyName ||
+                    statsCard?.data?.name ||
+                    "Untitled card"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeStats}
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-5">
+              {statsLoading ? (
+                <div className="text-sm text-gray-500">Loading analytics…</div>
+              ) : !stats ? (
+                <div className="text-sm text-gray-500">No analytics available.</div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <Eye className="h-4 w-4 text-indigo-600" /> Views
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.views ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <CalendarCheck2 className="h-4 w-4 text-emerald-600" /> Appointments
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.appointments ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <Share2 className="h-4 w-4 text-sky-600" /> Shares
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.shares ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <Heart className="h-4 w-4 text-rose-600" /> Likes
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.likes ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <Download className="h-4 w-4 text-gray-700" /> Contact downloads
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.contactDownloads ?? stats.downloads ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center gap-2 text-gray-700 text-xs">
+                        <Download className="h-4 w-4 text-violet-600" /> Saves
+                      </div>
+                      <div className="text-xl font-semibold text-gray-900 mt-1">
+                        {Number(stats.saves ?? 0)}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 body {
     font-family: 'Poppins', sans-serif;
+    height: full;
+    width: full;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 

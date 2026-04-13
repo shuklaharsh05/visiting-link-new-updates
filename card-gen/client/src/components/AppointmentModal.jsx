@@ -23,7 +23,7 @@ const AppointmentModal = ({ isOpen, onClose, cardId, defaultName = '', defaultEm
   // If no cardId, show a message instead of the form
   if (!cardId) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white rounded-xl w-[90%] max-w-sm p-5 relative">
           <button className="absolute top-3 right-3 text-gray-500" onClick={onClose} aria-label="Close">
             <X className="w-5 h-5" />
@@ -64,7 +64,7 @@ const AppointmentModal = ({ isOpen, onClose, cardId, defaultName = '', defaultEm
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl w-[90%] max-w-sm p-5 relative">
         <button className="absolute top-3 right-3 text-gray-500" onClick={onClose} aria-label="Close">
           <X className="w-5 h-5" />

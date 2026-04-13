@@ -1,11 +1,22 @@
 import { authenticatedFetch } from "./auth.js";
 
 export async function getAllUsers(options = {}) {
-  const { limit = 10, page = 1, search = "", raw = false } = options;
+  const {
+    limit = 10,
+    page = 1,
+    search = "",
+    startDate,
+    endDate,
+    ids,
+    raw = false,
+  } = options;
   const params = new URLSearchParams();
   if (limit) params.set("limit", String(limit));
   if (page) params.set("page", String(page));
   if (search) params.set("search", search);
+  if (startDate) params.set("startDate", String(startDate));
+  if (endDate) params.set("endDate", String(endDate));
+  if (ids != null && String(ids).trim() !== "") params.set("ids", String(ids));
   const qs = params.toString();
   const url = qs ? `/users?${qs}` : "/users";
   const res = await authenticatedFetch(url);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckSquare, Search, Trash2, X } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Download, Search, Trash2, X } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { getAllUsers, bulkDeleteUsers } from '../api/users';
 import { useToast } from '../contexts/ToastContext';
 
@@ -17,6 +18,9 @@ const UserDetails = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteUserLoading, setDeleteUserLoading] = useState(false);
   const [deleteUserError, setDeleteUserError] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
   const selectAllUserRef = useRef(null);
   const loadMoreRef = useRef(null);
   const { success: showSuccess, error: showError } = useToast();
@@ -25,11 +29,11 @@ const UserDetails = () => {
     resetAndLoadUsers();
   }, []);
 
-  // Debounced search: when searchTerm changes (after initial mount), reset and reload
-  const isFirstSearchEffect = useRef(true);
+  // Debounced search / date filters: after initial mount, reset and reload
+  const isFirstFilterEffect = useRef(true);
   useEffect(() => {
-    if (isFirstSearchEffect.current) {
-      isFirstSearchEffect.current = false;
+    if (isFirstFilterEffect.current) {
+      isFirstFilterEffect.current = false;
       return;
     }
     const timer = setTimeout(() => {
@@ -40,7 +44,7 @@ const UserDetails = () => {
     }, 400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, filterStartDate, filterEndDate]);
 
   useEffect(() => {
     if (selectAllUserRef.current && userList.length) {
@@ -57,6 +61,8 @@ const UserDetails = () => {
         limit: 20,
         raw: true,
         search: searchTerm.trim() || undefined,
+        startDate: filterStartDate || undefined,
+        endDate: filterEndDate || undefined,
       });
       const items = Array.isArray(res.data?.users)
         ? res.data.users
@@ -135,6 +141,66 @@ const UserDetails = () => {
     setDeleteUserError('');
   };
 
+  const handleExportUsersExcel = async () => {
+    if (filterStartDate && filterEndDate && filterStartDate > filterEndDate) {
+      showError('From date must be before or equal to To date');
+      return;
+    }
+    setExportLoading(true);
+    try {
+      const ids =
+        selectedUserIds.length > 0
+          ? selectedUserIds.map((id) => String(id)).join(',')
+          : undefined;
+      const base = {
+        limit: 200,
+        search: searchTerm.trim() || undefined,
+        startDate: filterStartDate || undefined,
+        endDate: filterEndDate || undefined,
+        ids,
+        raw: true,
+      };
+      const rows = [];
+      let pageNum = 1;
+      let hasNext = true;
+      while (hasNext) {
+        const res = await getAllUsers({ ...base, page: pageNum });
+        const items = Array.isArray(res?.data?.users) ? res.data.users : [];
+        rows.push(...items);
+        const p = res?.data?.pagination;
+        hasNext = Boolean(p?.hasNext);
+        pageNum += 1;
+        if (pageNum > 5000) break;
+      }
+      if (rows.length === 0) {
+        showError('No users match the current filters');
+        return;
+      }
+      const sheetRows = rows.map((u) => ({
+        Name: u.name ?? '',
+        Email: u.email ?? '',
+        Phone: u.phone ?? '',
+        'Cards count': typeof u.cardsCount === 'number' ? u.cardsCount : '',
+        'Created by':
+          u.createdByType === 'admin'
+            ? `admin${u.createdByAdminName ? ` (${u.createdByAdminName})` : ''}`
+            : 'self',
+        'Created at': u.createdAt ? new Date(u.createdAt).toLocaleString() : '',
+        'User ID': String(u._id ?? ''),
+      }));
+      const ws = XLSX.utils.json_to_sheet(sheetRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Users');
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      XLSX.writeFile(wb, `users-export-${stamp}.xlsx`);
+      showSuccess(`Exported ${rows.length} user(s)`);
+    } catch (err) {
+      showError(err?.message || 'Export failed');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const handleConfirmBulkDeleteUsers = async () => {
     if (!deletePassword.trim()) {
       setDeleteUserError('Please enter your password');
@@ -183,7 +249,16 @@ const UserDetails = () => {
         />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <button
+            type="button"
+            onClick={handleExportUsersExcel}
+            disabled={exportLoading}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" />
+            {exportLoading ? 'Exporting…' : 'Export Excel'}
+          </button>
           {!userSelectionMode ? (
             <button
               onClick={() => setUserSelectionMode(true)}
@@ -212,6 +287,36 @@ const UserDetails = () => {
             </>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-end gap-4">
+        <div>
+          <label htmlFor="user-filter-start" className="block text-xs font-medium text-gray-500 mb-1">
+            Created from
+          </label>
+          <input
+            id="user-filter-start"
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => setFilterStartDate(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+        </div>
+        <div>
+          <label htmlFor="user-filter-end" className="block text-xs font-medium text-gray-500 mb-1">
+            Created to
+          </label>
+          <input
+            id="user-filter-end"
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => setFilterEndDate(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+        </div>
+        <p className="text-xs text-gray-500 pb-2 max-w-xl">
+          Export uses the current search, created-date range, and—if any rows are checked—only those user IDs (all filters are combined).
+        </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -285,7 +390,7 @@ const UserDetails = () => {
 
       {/* Delete users – password confirmation modal */}
       {showDeleteUserModal && (
-        <div className="fixed inset-0 top-[-50px] z-[60] flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/60">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete selected users</h3>
             <p className="text-sm text-gray-600 mb-4">

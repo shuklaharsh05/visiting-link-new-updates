@@ -66,9 +66,21 @@ export const getMyCards = async (req, res) => {
       return res.status(401).json({ error: "Not authorized" });
     }
 
-    const filter = {
-      $or: [{ createdBy: userId }, { userId: userId }],
-    };
+    const or = [{ createdBy: userId }, { userId: userId }];
+
+    // Backward-compat: older admin-generated cards may only have clientId (Inquiry) set.
+    // Include cards whose Inquiry belongs to the authenticated user.
+    try {
+      const Inquiry = (await import("../models/Inquiry.js")).default;
+      const inquiryIds = await Inquiry.find({ userId })
+        .select("_id")
+        .lean();
+      if (Array.isArray(inquiryIds) && inquiryIds.length > 0) {
+        or.push({ clientId: { $in: inquiryIds.map((x) => x._id) } });
+      }
+    } catch {}
+
+    const filter = { $or: or };
     if (templateId) {
       filter.templateId = String(templateId);
     }
@@ -270,6 +282,20 @@ export const createCard = async (req, res) => {
         adminId: (req.user && (req.user.username || req.user.id)) || "admin",
       }),
     };
+
+    // If this card is created for an Inquiry, attach the owning end-user so it appears in "My cards".
+    // Inquiry.userId is the owner in the landing page app.
+    if (clientId) {
+      try {
+        const Inquiry = (await import("../models/Inquiry.js")).default;
+        const inquiry = await Inquiry.findById(clientId).select("userId").lean();
+        if (inquiry?.userId) {
+          cardDataToSave.userId = inquiry.userId;
+        }
+      } catch (e) {
+        // Don't block card creation if inquiry lookup fails.
+      }
+    }
 
     if (process.env.DEBUG === "true") {
       // console.log("Creating card with data:", cardDataToSave);
@@ -493,6 +519,8 @@ export const getCardAnalytics = async (req, res) => {
       shares: card.shares || 0,
       saves: card.saves || 0,
       downloads: card.downloads || 0,
+      contactDownloads: card.downloads || 0,
+      appointments: Array.isArray(card.appointments) ? card.appointments.length : 0,
       lastViewed: card.lastViewed,
       createdAt: card.createdAt,
       updatedAt: card.updatedAt,

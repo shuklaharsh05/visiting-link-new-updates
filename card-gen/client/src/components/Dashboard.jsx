@@ -342,7 +342,7 @@ const Dashboard = ({ onNavigate }) => {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center p-4 bg-black/50">
           <div
             className="absolute inset-0"
             onClick={() => setModalOpen(false)}

@@ -617,7 +617,7 @@ const MediaLibrary = ({ onSelect, defaultTab = 'image', onFolderChange, currentF
 
       {/* Create Folder Modal */}
       {showCreateFolder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowCreateFolder(false)} />
           <div className="bg-white rounded-lg p-6 max-w-md mx-4 relative">
             <h3 className="text-lg font-semibold mb-4">Create New Folder</h3>
@@ -673,7 +673,7 @@ const MediaLibrary = ({ onSelect, defaultTab = 'image', onFolderChange, currentF
 
       {/* Rename Folder Modal */}
       {showRenameFolder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowRenameFolder(false)} />
           <div className="bg-white rounded-lg p-6 max-w-md mx-4 relative">
             <h3 className="text-lg font-semibold mb-4">Rename Folder</h3>
@@ -769,7 +769,7 @@ const MediaLibrary = ({ onSelect, defaultTab = 'image', onFolderChange, currentF
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDeleteConfirm(null)} />
           <div className="bg-white rounded-lg p-6 max-w-md mx-4 relative">
             <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>

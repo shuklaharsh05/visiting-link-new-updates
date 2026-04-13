@@ -1118,7 +1118,7 @@ const BusinessDirectory = ({ onEditCard }) => {
       {/* Assign inquiry — admin picker modal */}
       {assignModalInquiry && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 !mt-0 z-50 flex items-center justify-center bg-black/50 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="assign-modal-title"
@@ -1220,7 +1220,7 @@ const BusinessDirectory = ({ onEditCard }) => {
 
       {/* Delete selected – password confirmation modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 top-[-50px] z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 !mt-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete selected inquiries</h3>
             <p className="text-sm text-gray-600 mb-4">

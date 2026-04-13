@@ -16,7 +16,7 @@ const validateObjectId = (id) =>
 // @access  Private
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, startDate, endDate, ids } = req.query;
     const query = {};
 
     // Search by name, email or phone if provided
@@ -28,6 +28,55 @@ export const getAllUsers = async (req, res) => {
       ];
     }
 
+    // Filter by specific user IDs (comma-separated), e.g. export selected users
+    if (ids !== undefined && ids !== null && String(ids).trim() !== "") {
+      const idList = String(ids)
+        .split(",")
+        .map((s) => s.trim())
+        .filter((id) => validateObjectId(id));
+      if (idList.length === 0) {
+        return res.json({
+          success: true,
+          data: {
+            users: [],
+            pagination: {
+              currentPage: parseInt(page, 10) || 1,
+              totalPages: 0,
+              totalUsers: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+          },
+        });
+      }
+      query._id = { $in: idList };
+    }
+
+    // Optional createdAt range (inclusive, server local calendar day)
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        const d = new Date(startDate);
+        if (!Number.isNaN(d.getTime())) {
+          d.setHours(0, 0, 0, 0);
+          query.createdAt.$gte = d;
+        }
+      }
+      if (endDate) {
+        const d = new Date(endDate);
+        if (!Number.isNaN(d.getTime())) {
+          d.setHours(23, 59, 59, 999);
+          query.createdAt.$lte = d;
+        }
+      }
+      if (Object.keys(query.createdAt).length === 0) {
+        delete query.createdAt;
+      }
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 500);
+
     const users = await User.find(query)
       .populate(
         "inquiries",
@@ -37,8 +86,8 @@ export const getAllUsers = async (req, res) => {
       .populate("appointments", "name email phone message status createdAt")
       .populate("createdByAdmin", "name")
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .limit(limitNum)
+      .skip((pageNum - 1) * limitNum);
 
     const total = await User.countDocuments(query);
 
@@ -86,11 +135,11 @@ export const getAllUsers = async (req, res) => {
       data: {
         users: usersWithMeta,
         pagination: {
-          currentPage: parseInt(page),
-          totalPages: Math.ceil(total / limit),
+          currentPage: pageNum,
+          totalPages: Math.ceil(total / limitNum) || 0,
           totalUsers: total,
-          hasNext: page < Math.ceil(total / limit),
-          hasPrev: page > 1,
+          hasNext: pageNum < Math.ceil(total / limitNum),
+          hasPrev: pageNum > 1,
         },
       },
     });

@@ -600,7 +600,7 @@ const PublicCardViewer = () => {
           user?.role === "admin" ||
           user?.role === "superadmin"
         ) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="fixed inset-0 !mt-0 z-[9998] flex items-center justify-center bg-black/50">
             {/* Centered popup container */}
             <div className="items-center justify-center max-w-5xl w-full px-4 flex lg:mr-[-11rem]">
               {/* Left illustration */}

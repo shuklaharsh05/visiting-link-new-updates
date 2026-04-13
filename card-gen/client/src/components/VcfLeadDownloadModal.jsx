@@ -28,7 +28,7 @@ export default function VcfLeadDownloadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 !mt-0 z-[200] flex items-center justify-center p-4 bg-black/60">
       <div
         className="absolute inset-0"
         aria-hidden

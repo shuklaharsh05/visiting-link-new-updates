@@ -15,7 +15,7 @@ const MediaManager = ({ isOpen, onClose, onSelect, defaultTab = 'image', multiSe
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 !mt-0 z-[9998]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="absolute inset-0 p-6 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-xl w-full max-w-[85%] h-[90vh] flex flex-col">

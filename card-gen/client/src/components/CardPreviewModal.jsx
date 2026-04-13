@@ -209,7 +209,7 @@ const CardPreviewModal = ({
   const safeTemplate = resolvedTemplate || template;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 !mt-0 z-[9998] overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
