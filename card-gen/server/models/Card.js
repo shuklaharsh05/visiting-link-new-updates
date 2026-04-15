@@ -231,6 +231,19 @@ const cardSchema = new mongoose.Schema(
     isCustom: { type: Boolean, default: false },
     shareableLink: String,
     qrCode: String,
+    reviewFunnel: {
+      totalRatings: { type: Number, default: 0 },
+      googleClicks: { type: Number, default: 0 },
+      ratingCounts: {
+        1: { type: Number, default: 0 },
+        2: { type: Number, default: 0 },
+        3: { type: Number, default: 0 },
+        4: { type: Number, default: 0 },
+        5: { type: Number, default: 0 },
+      },
+      lastRatedAt: { type: Date },
+      lastGoogleClickAt: { type: Date },
+    },
 
     // Analytics
     views: { type: Number, default: 0 },

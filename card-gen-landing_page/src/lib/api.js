@@ -430,6 +430,16 @@ class ApiService {
     });
   }
 
+  // Review funnel (ratings + feedback)
+  async getReviewFunnelStats(cardId) {
+    return this.request(`/review-funnel/${cardId}/stats`);
+  }
+
+  async getReviewFeedbacks(cardId, { limit = 25 } = {}) {
+    const queryParams = new URLSearchParams({ limit: String(limit) });
+    return this.request(`/review-funnel/${cardId}/feedbacks?${queryParams.toString()}`);
+  }
+
   // Payment APIs
   async createPaymentOrder(inquiryId, amount) {
     return this.request("/payment/create-order", {

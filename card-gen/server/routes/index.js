@@ -16,6 +16,7 @@ import couponRoutes from "./couponRoutes.js";
 import contactRoutes from "./contactRoutes.js";
 import detailsRoutes from "./detailsRoutes.js";
 import expoRoutes from "./expoRoutes.js";
+import reviewFunnelRoutes from "./reviewFunnelRoutes.js";
 import { authLimiter, paymentLimiter } from "../middleware/securityMiddleware.js";
 
 const router = express.Router();
@@ -37,5 +38,6 @@ router.use("/coupons", couponRoutes);
 router.use("/contacts", contactRoutes);
 router.use("/details", detailsRoutes);
 router.use("/expo", expoRoutes);
+router.use("/review-funnel", reviewFunnelRoutes);
 
 export default router;

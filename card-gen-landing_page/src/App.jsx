@@ -9,6 +9,7 @@ import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Appointments from "./pages/Appointments.jsx";
 import MyCard from "./pages/MyCard.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import SavedCards from "./pages/SavedCards.jsx";
 import Inquiry from "./pages/Inquiry.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
@@ -70,6 +71,7 @@ function App() {
           >
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="appointments" element={<Appointments />} />
+            <Route path="reviews" element={<Reviews />} />
             <Route path="my-card" element={<MyCard />} />
             <Route path="saved-cards" element={<SavedCards />} />
             <Route path="contacts" element={<Contacts />} />

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { apiService } from "../lib/api.js";
-import { Plus, Eye, Trash2, CreditCard, ArrowLeft, Send, X } from "lucide-react";
+import { Plus, Eye, Trash2, CreditCard, ArrowLeft, Send, X, Share2, Copy, Download } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import CardPreviewModal from "../components/CardPreviewModal.jsx";
 import UserCardGenerator from "../components/UserCardGenerator.jsx";
 import { useTemplateRazorpay } from "../hooks/useTemplateRazorpay.js";
@@ -22,8 +23,48 @@ export default function MyCard() {
   const [requestForm, setRequestForm] = useState({ name: "", email: "", phone: "", message: "", businessType: "" });
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestResult, setRequestResult] = useState({ ok: "", err: "" });
+  const [shareCard, setShareCard] = useState(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const qrCanvasRef = useRef(null);
 
   const { initiateTemplatePayment, loading: paymentLoading } = useTemplateRazorpay();
+
+  const getShareableLink = (card) => {
+    if (!card?.shareableLink) return null;
+    return card.shareableLink.replace("teamserver.cloud", "www.visitinglink.com");
+  };
+
+  const getCardDisplayName = (card) =>
+    card?.name || card?.data?.CompanyName || card?.data?.name || "My card";
+
+  const getBackendQrDataUrl = (card) => {
+    const candidates = [
+      card?.qr,
+      card?.qrCode,
+      card?.qrcode,
+      card?.qrImage,
+      card?.qr_code,
+      card?.qr_code_image,
+      card?.data?.qr,
+      card?.data?.qrCode,
+      card?.data?.qrcode,
+      card?.data?.qrImage,
+      card?.data?.qr_code,
+    ];
+
+    const raw = candidates.find((v) => typeof v === "string" && v.trim().length > 0)?.trim() || "";
+    if (!raw) return "";
+
+    // Already a proper data URL from backend.
+    if (raw.startsWith("data:image/")) return raw;
+
+    // If backend sends only the base64 payload, normalize to a data URL.
+    if (/^[A-Za-z0-9+/]+=*$/.test(raw) && raw.length > 100) {
+      return `data:image/png;base64,${raw}`;
+    }
+
+    return "";
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -110,6 +151,62 @@ export default function MyCard() {
       setView("list");
       setEditingCard(null);
     }
+  };
+
+  const handleShare = (cardId) => {
+    const card = cards.find((c) => c._id === cardId);
+    if (!card) return;
+    const shareableLink = getShareableLink(card);
+    if (!shareableLink) {
+      alert("No shareable link is available for this card yet.");
+      return;
+    }
+    setLinkCopied(false);
+    setShareCard(card);
+  };
+
+  const copyShareLink = async () => {
+    const link = shareCard ? getShareableLink(shareCard) : null;
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      alert("Could not copy link. Select the link and copy it manually.");
+    }
+  };
+
+  const shareLinkNative = async () => {
+    const link = shareCard ? getShareableLink(shareCard) : null;
+    if (!link || !shareCard) return;
+    const title = getCardDisplayName(shareCard);
+    if (!navigator.share) {
+      await copyShareLink();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: `${title} — Digital card`,
+        text: `Open ${title}'s digital card`,
+        url: link,
+      });
+    } catch (err) {
+      if (err?.name !== "AbortError") {
+        await copyShareLink();
+      }
+    }
+  };
+
+  const downloadQrPng = () => {
+    const backendQr = shareCard ? getBackendQrDataUrl(shareCard) : "";
+    const dataUrl = backendQr || qrCanvasRef.current?.toDataURL?.("image/png") || "";
+    if (!dataUrl) return;
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `card-qr-${shareCard?._id?.slice(-8) || "card"}.png`;
+    a.rel = "noopener";
+    a.click();
   };
 
   if (loading) {
@@ -300,7 +397,7 @@ export default function MyCard() {
                         onSuccess: async () => {
                           await onPaid();
                         },
-                        onFailure: () => {},
+                        onFailure: () => { },
                       });
                     } catch (e) {
                       // keep modal open; user can retry
@@ -404,26 +501,35 @@ export default function MyCard() {
           {cards.map((card) => (
             <div
               key={card._id}
-              className="border border-slate-200 rounded-2xl p-4 flex flex-col justify-between bg-white"
+              className="border border-slate-200 rounded-2xl p-4 flex flex-col justify-between bg-white relative"
             >
+              <div className="absolute top-2 right-2">
+                <button
+                  type="button"
+                  onClick={() => handleDelete(card._id)}
+                  className="inline-flex items-center justify-center rounded-full border border-red-200 text-red-600 px-2 py-2 text-xs"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
               <div className="flex items-center gap-2">
                 <img src={card.data?.logo || card.data?.media || ""} alt={card.name || card.data?.CompanyName || card.data?.name || "Untitled card"} className="w-16 h-16 rounded-full" />
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                  {card.name || card.data?.CompanyName || card.data?.name || "Untitled card"}
-                </h2>
-                <p className="text-xs text-slate-500 mb-2">
-                  {card.categoryId} · {card.templateId}
-                  <br />
-                  Updated {card.updatedAt ? new Date(card.updatedAt).toLocaleDateString() : ""}
-                  {card.lastEditedBy ? (
-                    <>
-                      <br />
-                      Edited by {card.lastEditedBy}
-                    </>
-                  ) : null}
-                </p>
-              </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900 mb-1">
+                    {card.name || card.data?.CompanyName || card.data?.name || "Untitled card"}
+                  </h2>
+                  <p className="text-xs text-slate-500 mb-2">
+                    {card.categoryId} · {card.templateId}
+                    <br />
+                    Updated {card.updatedAt ? new Date(card.updatedAt).toLocaleDateString() : ""}
+                    {card.lastEditedBy ? (
+                      <>
+                        <br />
+                        Edited by {card.lastEditedBy}
+                      </>
+                    ) : null}
+                  </p>
+                </div>
               </div>
               <div className="mt-3 flex gap-2">
                 <button
@@ -443,10 +549,10 @@ export default function MyCard() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(card._id)}
+                  onClick={() => handleShare(card._id)}
                   className="inline-flex items-center justify-center rounded-full border border-red-200 text-red-600 px-2 py-1 text-xs"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Share2 className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -459,6 +565,105 @@ export default function MyCard() {
         onClose={() => setPreviewCard(null)}
         card={previewCard}
       />
+
+      {shareCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div
+            className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
+            role="dialog"
+            aria-labelledby="share-card-title"
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <h3 id="share-card-title" className="text-sm font-semibold text-slate-900">
+                Share your card
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShareCard(null)}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-slate-600">
+                Share the link or the QR code. Others can scan the QR to open your card.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Link</label>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={getShareableLink(shareCard) || ""}
+                    className="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 bg-slate-50"
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    onClick={copyShareLink}
+                    className="shrink-0 inline-flex items-center justify-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {linkCopied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-xs font-medium text-slate-700">QR code</span>
+                <div className="rounded-xl border border-slate-200 bg-white p-3 inline-block">
+                  {getBackendQrDataUrl(shareCard) ? (
+                    <img
+                      src={getBackendQrDataUrl(shareCard)}
+                      alt={`QR for ${getCardDisplayName(shareCard)}`}
+                      className="w-[200px] h-[200px] object-contain"
+                    />
+                  ) : (
+                    <QRCodeCanvas
+                      ref={qrCanvasRef}
+                      value={getShareableLink(shareCard) || ""}
+                      size={200}
+                      level="M"
+                      marginSize={2}
+                      title={`QR for ${getCardDisplayName(shareCard)}`}
+                    />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={downloadQrPng}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download QR (PNG)
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {"share" in navigator && typeof navigator.share === "function" ? (
+                  <button
+                    type="button"
+                    onClick={shareLinkNative}
+                    className="inline-flex flex-1 min-w-[120px] items-center justify-center gap-2 rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share link
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const u = getShareableLink(shareCard);
+                    if (u) window.open(u, "_blank", "noopener,noreferrer");
+                  }}
+                  className="inline-flex flex-1 min-w-[120px] items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Open in new tab
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {requestOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">

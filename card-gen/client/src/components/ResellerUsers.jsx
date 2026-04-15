@@ -3,6 +3,7 @@ import { BarChart3, CalendarCheck2, Download, Eye, Heart, Pen, Share2, Trash2, X
 import { resellerAPI } from "../api/reseller";
 import { walletAPI } from "../api/wallet";
 import { getCardAnalytics } from "../api/cards";
+import { getNegativeFeedbacks, getReviewFunnelStats } from "../api/reviewFunnel";
 import { useToast } from "../contexts/ToastContext";
 
 export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) {
@@ -28,6 +29,10 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsCard, setStatsCard] = useState(null);
   const [stats, setStats] = useState(null);
+  const [reviewStats, setReviewStats] = useState(null);
+  const [reviewFeedbacks, setReviewFeedbacks] = useState([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [statsTab, setStatsTab] = useState("appointments"); // appointments | reviews
 
   const users = useMemo(() => usersRes?.data?.users || usersRes?.users || [], [usersRes]);
 
@@ -115,16 +120,28 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
     setStatsOpen(true);
     setStatsCard(card);
     setStats(null);
+    setReviewStats(null);
+    setReviewFeedbacks([]);
+    setStatsTab("appointments");
     setStatsLoading(true);
+    setReviewLoading(true);
     try {
-      const res = await getCardAnalytics(card._id);
+      const [res, rfStats, rfFeedbacks] = await Promise.all([
+        getCardAnalytics(card._id),
+        getReviewFunnelStats(card._id).catch(() => null),
+        getNegativeFeedbacks(card._id, { limit: 10 }).catch(() => null),
+      ]);
       setStats(res || null);
+      setReviewStats(rfStats?.data ?? rfStats ?? null);
+      const items = rfFeedbacks?.data ?? rfFeedbacks ?? [];
+      setReviewFeedbacks(Array.isArray(items) ? items : []);
     } catch (e) {
       showError(e?.message || "Failed to load analytics");
       setStatsOpen(false);
       setStatsCard(null);
     } finally {
       setStatsLoading(false);
+      setReviewLoading(false);
     }
   };
 
@@ -133,6 +150,10 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
     setStats(null);
     setStatsCard(null);
     setStatsLoading(false);
+    setReviewStats(null);
+    setReviewFeedbacks([]);
+    setReviewLoading(false);
+    setStatsTab("appointments");
   };
 
   const handleDeleteCard = async (card) => {
@@ -426,56 +447,161 @@ export default function ResellerUsers({ onGenerateForUser, onEditCardForUser }) 
                 <div className="text-sm text-gray-500">No analytics available.</div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <Eye className="h-4 w-4 text-indigo-600" /> Views
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.views ?? 0)}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <CalendarCheck2 className="h-4 w-4 text-emerald-600" /> Appointments
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.appointments ?? 0)}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <Share2 className="h-4 w-4 text-sky-600" /> Shares
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.shares ?? 0)}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <Heart className="h-4 w-4 text-rose-600" /> Likes
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.likes ?? 0)}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <Download className="h-4 w-4 text-gray-700" /> Contact downloads
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.contactDownloads ?? stats.downloads ?? 0)}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 p-3">
-                      <div className="flex items-center gap-2 text-gray-700 text-xs">
-                        <Download className="h-4 w-4 text-violet-600" /> Saves
-                      </div>
-                      <div className="text-xl font-semibold text-gray-900 mt-1">
-                        {Number(stats.saves ?? 0)}
-                      </div>
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStatsTab("appointments")}
+                      className={[
+                        "px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors",
+                        statsTab === "appointments"
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                      ].join(" ")}
+                    >
+                      Appointments
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatsTab("reviews")}
+                      className={[
+                        "px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors",
+                        statsTab === "reviews"
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                      ].join(" ")}
+                    >
+                      Reviews
+                    </button>
                   </div>
+
+                  {statsTab === "appointments" ? (
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <Eye className="h-4 w-4 text-indigo-600" /> Views
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.views ?? 0)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <CalendarCheck2 className="h-4 w-4 text-emerald-600" /> Appointments
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.appointments ?? 0)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <Share2 className="h-4 w-4 text-sky-600" /> Shares
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.shares ?? 0)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <Heart className="h-4 w-4 text-rose-600" /> Likes
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.likes ?? 0)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <Download className="h-4 w-4 text-gray-700" /> Contact downloads
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.contactDownloads ?? stats.downloads ?? 0)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 p-3">
+                        <div className="flex items-center gap-2 text-gray-700 text-xs">
+                          <Download className="h-4 w-4 text-violet-600" /> Saves
+                        </div>
+                        <div className="text-xl font-semibold text-gray-900 mt-1">
+                          {Number(stats.saves ?? 0)}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="rounded-xl border border-gray-200 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Ratings</div>
+                        {reviewLoading ? (
+                          <div className="text-xs text-gray-500 mt-2">Loading review stats…</div>
+                        ) : !reviewStats ? (
+                          <div className="text-xs text-gray-500 mt-2">No review stats yet.</div>
+                        ) : (
+                          <div className="mt-3 grid grid-cols-2 gap-3">
+                            <div className="rounded-lg border border-gray-100 p-3">
+                              <div className="text-xs text-gray-600">Total ratings</div>
+                              <div className="text-lg font-semibold text-gray-900">
+                                {Number(reviewStats.totalRatings ?? 0)}
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-gray-100 p-3">
+                              <div className="text-xs text-gray-600">Google clicks</div>
+                              <div className="text-lg font-semibold text-gray-900">
+                                {Number(reviewStats.googleClicks ?? 0)}
+                              </div>
+                            </div>
+                            <div className="col-span-2 rounded-lg border border-gray-100 p-3">
+                              <div className="text-xs text-gray-600 mb-2">Ratings breakdown</div>
+                              <div className="grid grid-cols-5 gap-2 text-center">
+                                {[1, 2, 3, 4, 5].map((r) => (
+                                  <div key={r} className="rounded-md bg-gray-50 px-2 py-1">
+                                    <div className="text-[11px] text-gray-600">{r}★</div>
+                                    <div className="text-sm font-semibold text-gray-900">
+                                      {Number(reviewStats?.ratingCounts?.[r] ?? 0)}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-xl border border-gray-200 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-sm font-semibold text-gray-900">Feedback (1–2★)</div>
+                          <div className="text-xs text-gray-500">
+                            {reviewFeedbacks.length ? `Latest ${reviewFeedbacks.length}` : ""}
+                          </div>
+                        </div>
+                        {reviewLoading ? (
+                          <div className="text-xs text-gray-500 mt-2">Loading feedback…</div>
+                        ) : reviewFeedbacks.length === 0 ? (
+                          <div className="text-xs text-gray-500 mt-2">No feedback yet.</div>
+                        ) : (
+                          <div className="mt-3 space-y-3 max-h-72 overflow-auto pr-1">
+                            {reviewFeedbacks.map((f) => (
+                              <div
+                                key={f._id || `${f.createdAt}-${f.rating}`}
+                                className="rounded-lg border border-gray-100 p-3 bg-white"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div className="text-xs text-gray-600">
+                                      {Number(f.rating ?? 0)}★{f.name ? ` · ${f.name}` : ""}{f.phone ? ` · ${f.phone}` : ""}
+                                    </div>
+                                    <div className="text-sm text-gray-900 mt-1 whitespace-pre-wrap break-words">
+                                      {f.feedback}
+                                    </div>
+                                  </div>
+                                  <div className="text-[11px] text-gray-500 shrink-0">
+                                    {f.createdAt ? new Date(f.createdAt).toLocaleString() : ""}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

@@ -7,6 +7,9 @@ export default function VcfLeadDownloadModal({
   onConfirm,
   submitting,
   error,
+  title,
+  submitLabel,
+  showPurpose = true,
 }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,7 +40,7 @@ export default function VcfLeadDownloadModal({
       <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold text-gray-900 leading-snug">
-            Enter details to instantly download the card &amp; get exclusive updates
+            {title || "Enter details to instantly download the card & get exclusive updates"}
           </h2>
           <button
             type="button"
@@ -70,21 +73,24 @@ export default function VcfLeadDownloadModal({
               onChange={(e) => setPhone(e.target.value)}
               required
               disabled={submitting}
+              inputMode="tel"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Purpose <span className="text-gray-400">(optional)</span>
-            </label>
-            <textarea
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              rows={3}
-              disabled={submitting}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[80px]"
-            />
-          </div>
+          {showPurpose ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Purpose
+              </label>
+              <textarea
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                rows={3}
+                disabled={submitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[80px]"
+              />
+            </div>
+          ) : null}
           {error ? (
             <p className="text-sm text-red-600">{error}</p>
           ) : null}
@@ -102,7 +108,7 @@ export default function VcfLeadDownloadModal({
               disabled={submitting}
               className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {submitting ? "Saving…" : "Download"}
+              {submitting ? "Saving…" : submitLabel || "Download"}
             </button>
           </div>
         </form>

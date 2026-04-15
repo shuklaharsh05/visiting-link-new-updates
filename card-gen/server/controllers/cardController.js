@@ -3,6 +3,12 @@ import { generateQR } from "../utils/generateQR.js";
 import { dataValidator } from "../utils/dataValidation.js";
 import fetch from "node-fetch";
 
+const normalizeShareableLink = (url) => {
+  if (!url || typeof url !== "string") return "";
+  // Keep parity with frontend getShareableLink()
+  return url.replace("teamserver.cloud", "www.visitinglink.com");
+};
+
 const isAdminRequest = (req) =>
   req?.user?.role === "admin" || req?.user?.role === "superadmin";
 
@@ -112,7 +118,7 @@ export const getCardById = async (req, res) => {
     const frontendUrl = "https://teamserver.cloud";
     const shareableLink =
       card.shareableLink || `${frontendUrl}/cards/${card._id}`;
-    const qrCode = await generateQR(shareableLink);
+    const qrCode = await generateQR(normalizeShareableLink(shareableLink));
 
     res.json({
       card,
@@ -309,7 +315,7 @@ export const createCard = async (req, res) => {
     }
 
     // Generate QR code for the new card
-    const qrCode = await generateQR(newCard.publicUrl);
+    const qrCode = await generateQR(normalizeShareableLink(newCard.publicUrl));
     newCard.qrCode = qrCode;
     await newCard.save();
 
@@ -448,9 +454,25 @@ export const updateCard = async (req, res) => {
 
     console.log("Processed update query:", JSON.stringify(updateQuery));
 
-    const updated = await Card.findByIdAndUpdate(req.params.id, updateQuery, {
+    let updated = await Card.findByIdAndUpdate(req.params.id, updateQuery, {
       new: true,
     });
+
+    if (data && updated) {
+      try {
+        const link =
+          updated.shareableLink ||
+          `https://teamserver.cloud/cards/${updated._id}`;
+        const qrCode = await generateQR(normalizeShareableLink(link));
+        updated = await Card.findByIdAndUpdate(
+          req.params.id,
+          { $set: { qrCode } },
+          { new: true }
+        );
+      } catch (qrErr) {
+        console.warn("Failed to regenerate QR after card update:", qrErr);
+      }
+    }
 
     console.log("Card updated successfully");
     res.json({

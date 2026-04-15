@@ -11,6 +11,7 @@ import {
   Users,
   KeyRound,
   ClipboardList,
+  Star,
 } from "lucide-react";
 import { useState } from "react";
 import LinkCredentialsModal from "./LinkCredentialsModal.jsx";
@@ -33,6 +34,7 @@ export default function UserLayout() {
     { path: "/saved-cards", icon: Bookmark, label: "Saved Cards" },
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/appointments", icon: Calendar, label: "Appointments" },
+    { path: "/reviews", icon: Star, label: "Reviews" },
     { path: "/my-card", icon: CreditCard, label: "My Card" },
     { path: "/contacts", icon: Users, label: "Contacts" },
     {

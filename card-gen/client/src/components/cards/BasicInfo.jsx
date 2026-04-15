@@ -12,6 +12,8 @@ import {
     FileText,
     Download,
 } from "lucide-react";
+import VcfLeadDownloadModal from "../VcfLeadDownloadModal.jsx";
+import { useToast } from "../../contexts/ToastContext";
 
 const safeUrl = (v) => {
     if (!v || typeof v !== "string") return "";
@@ -37,8 +39,117 @@ const SocialIcon = ({ kind }) => {
     }
 };
 
-export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
+export default function BasicInfo({ cardData = {}, hiddenFields = [], cardId }) {
     const isHidden = (k) => hiddenFields?.includes?.(k);
+    const { success: showSuccess } = useToast();
+    const [vcfModalOpen, setVcfModalOpen] = useState(false);
+    const [vcfSubmitting, setVcfSubmitting] = useState(false);
+    const [vcfError, setVcfError] = useState("");
+    const effectiveCardId = cardId || cardData?._id || cardData?.cardId || cardData?.id;
+    const downloadVcfBlob = () => {
+        try {
+            const data = cardData || {};
+            const name =
+                data.CompanyName ||
+                data.companyName ||
+                data.storeName ||
+                data.name ||
+                data.customCardData?.companyName ||
+                "Contact";
+
+            const phone =
+                data.phoneNumber ||
+                data.whatsappNumber ||
+                data.phone ||
+                data.contact?.phone ||
+                data.customCardData?.phone ||
+                "";
+
+            const email =
+                data.email || data.contact?.email || data.customCardData?.email || "";
+
+            const shareableLink = effectiveCardId
+                ? `https://www.visitinglink.com/cards/${effectiveCardId}`
+                : "";
+
+            const escapeVal = (val) => {
+                if (!val) return "";
+                return String(val)
+                    .replace(/\\/g, "\\\\")
+                    .replace(/,/g, "\\,")
+                    .replace(/;/g, "\\;")
+                    .replace(/\r?\n/g, "\\n")
+                    .replace(/\r/g, "");
+            };
+
+            const vcardLines = [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                `N:;${escapeVal(name)};;;`,
+                `FN:${escapeVal(name)}`,
+                phone ? `TEL;TYPE=CELL:${escapeVal(phone)}` : "",
+                email ? `EMAIL;TYPE=INTERNET:${escapeVal(email)}` : "",
+                shareableLink ? `URL:${escapeVal(shareableLink)}` : "",
+                "END:VCARD",
+            ].filter(Boolean);
+
+            const vcardString = vcardLines.join("\r\n");
+            const blob = new Blob([vcardString], { type: "text/vcard;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${name || "contact"}.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch {
+            // best-effort
+        }
+    };
+
+    const openVcfModal = () => {
+        setVcfError("");
+        if (!effectiveCardId) {
+            downloadVcfBlob();
+            return;
+        }
+        setVcfModalOpen(true);
+    };
+
+    const handleVcfConfirm = async ({ name, phone, purpose }) => {
+        if (!effectiveCardId) {
+            downloadVcfBlob();
+            setVcfModalOpen(false);
+            return;
+        }
+        setVcfSubmitting(true);
+        setVcfError("");
+        try {
+            const res = await fetch(`/api/cards/${effectiveCardId}/vcf-lead`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, phone, purpose: purpose || "exchange-contacts" }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                setVcfError(
+                    data.error ||
+                    data.message ||
+                    (Array.isArray(data.errors) && data.errors[0]?.msg) ||
+                    "Could not save details"
+                );
+                return;
+            }
+            downloadVcfBlob();
+            showSuccess("Contact downloaded");
+            setVcfModalOpen(false);
+        } catch (e) {
+            setVcfError(e?.message || "Network error");
+        } finally {
+            setVcfSubmitting(false);
+        }
+    };
     const [theme, setTheme] = useState(() => {
         try {
             return localStorage.getItem("card-theme") === "dark" ? "dark" : "light";
@@ -447,15 +558,29 @@ export default function BasicInfo({ cardData = {}, hiddenFields = [] }) {
             <div className="space-y-2 mt-6 px-5">
                 <button className="flex items-center justify-center gap-2 rounded-xl bg-[#FC6464] text-white px-4 py-2 w-full">Save in Visiting Link</button>
                 <a href={cardData.website} className="flex items-center justify-center gap-2 rounded-xl bg-[#1B13FF] text-white px-4 py-2 w-full">Click to open Website </a>
-                <button className="flex items-center justify-center gap-2 rounded-xl bg-white text-black px-4 py-2 w-full">
+                <button
+                    type="button"
+                    onClick={openVcfModal}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-white text-black px-4 py-2 w-full"
+                >
                     <Download className="h-4 w-4" />
-                    Get My Contact Details</button>
+                    Exchange Contacts</button>
             </div>
 
             <button className="text-[12px] flex items-center justify-center gap-2 rounded-full bg-[#D9D9D9] text-black px-4 py-2 mt-10 mx-auto">Get Visiting Link</button>
             </div>
 
             
+            <VcfLeadDownloadModal
+                isOpen={vcfModalOpen}
+                onClose={() => { if (!vcfSubmitting) { setVcfModalOpen(false); setVcfError(""); } }}
+                onConfirm={handleVcfConfirm}
+                submitting={vcfSubmitting}
+                error={vcfError}
+                title="Share Your Contact"
+                submitLabel="Download contact"
+                showPurpose={true}
+            />
             </div>
         </div>
     );
