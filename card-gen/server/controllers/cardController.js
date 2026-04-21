@@ -592,14 +592,30 @@ export const updatePaymentStatus = async (req, res) => {
 // @access  Public
 export const updateViewCount = async (req, res) => {
   try {
-    const updated = await Card.findByIdAndUpdate(
-      req.params.id,
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Try to increment today's entry in viewsHistory
+    let updated = await Card.findOneAndUpdate(
+      { _id: req.params.id, "viewsHistory.date": today },
       {
-        $inc: { views: 1 },
+        $inc: { views: 1, "viewsHistory.$.count": 1 },
         $set: { lastViewed: new Date() },
       },
       { new: true, projection: { views: 1, lastViewed: 1 } }
     );
+
+    // If today's entry doesn't exist yet, push a new one
+    if (!updated) {
+      updated = await Card.findByIdAndUpdate(
+        req.params.id,
+        {
+          $inc: { views: 1 },
+          $set: { lastViewed: new Date() },
+          $push: { viewsHistory: { date: today, count: 1 } },
+        },
+        { new: true, projection: { views: 1, lastViewed: 1 } }
+      );
+    }
 
     if (!updated) {
       return res.status(404).json({ error: "Card not found" });
@@ -612,6 +628,57 @@ export const updateViewCount = async (req, res) => {
     });
   } catch (err) {
     console.error("Update view count error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// @desc    Get weekly views data for a card (last 7 days)
+// @route   GET /api/cards/:id/weekly-views
+// @access  Protected
+export const getCardWeeklyViews = async (req, res) => {
+  try {
+    const card = await Card.findById(req.params.id)
+      .select("viewsHistory views")
+      .lean();
+
+    if (!card) {
+      return res.status(404).json({ error: "Card not found" });
+    }
+
+    // Build last 7 days array
+    const days = [];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push({
+        date: d.toISOString().slice(0, 10),
+        label: dayNames[d.getDay()],
+      });
+    }
+
+    // Build a lookup map from viewsHistory
+    const historyMap = {};
+    if (Array.isArray(card.viewsHistory)) {
+      for (const entry of card.viewsHistory) {
+        historyMap[entry.date] = entry.count || 0;
+      }
+    }
+
+    // Map to response
+    const weeklyViews = days.map((d) => ({
+      date: d.date,
+      label: d.label,
+      value: historyMap[d.date] || 0,
+    }));
+
+    res.json({
+      success: true,
+      data: weeklyViews,
+      totalViews: card.views || 0,
+    });
+  } catch (err) {
+    console.error("Get weekly views error:", err);
     res.status(500).json({ error: err.message });
   }
 };

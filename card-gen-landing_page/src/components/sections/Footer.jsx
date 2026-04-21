@@ -50,7 +50,7 @@ function Footer() {
             <h4 className="font-semibold mb-3 text-gray-200 text-base sm:text-lg">Policies</h4>
             <ul className="space-y-2 text-gray-400 text-sm sm:text-base">
               <li><a href="/terms-and-conditions" className="hover:text-white transition">Terms And Conditions</a></li>
-              <li><a href="/privacy-policy" className="hover:text-white transition">Privacy Policy</a></li>
+              <li><a href="/privacy" className="hover:text-white transition">Privacy Policy</a></li>
               <li><a href="/refund-policy" className="hover:text-white transition">Refund Policy</a></li>
             </ul>
           </div>

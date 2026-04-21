@@ -7,6 +7,7 @@ import {
   classifyIdentifier,
   getIdentifierErrorMessage,
 } from "../utils/identifier.js";
+import { isMobileViewport } from "../utils/isMobile.js";
 
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
@@ -28,8 +29,8 @@ export default function Login() {
         setError(error.message);
         setLoading(false);
       } else {
-        const hasInquiries = authUser?.inquiries && Array.isArray(authUser.inquiries) && authUser.inquiries.length > 0;
-        navigate(hasInquiries ? "/dashboard" : "/my-card");
+        const mobile = isMobileViewport();
+        navigate(mobile ? "/my-card" : "/dashboard");
       }
     } catch (err) {
       setError("Google login failed. Please try again.");
@@ -70,8 +71,8 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else {
-      const hasInquiries = authUser?.inquiries && Array.isArray(authUser.inquiries) && authUser.inquiries.length > 0;
-      navigate(hasInquiries ? "/dashboard" : "/my-card");
+      const mobile = isMobileViewport();
+      navigate(mobile ? "/my-card" : "/dashboard");
     }
   };
 

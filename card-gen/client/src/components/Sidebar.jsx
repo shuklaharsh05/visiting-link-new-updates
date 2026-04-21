@@ -55,56 +55,44 @@ const Sidebar = ({ currentPage, setCurrentPage, onLogout }) => {
 
   return (
     <>
-      <aside className="relative flex flex-col h-full w-16 bg-white shadow-lg border-r border-gray-200 shrink-0 overflow-visible">
+      <aside className="relative flex flex-col h-full w-14 bg-white shadow-sm border-r border-gray-100 shrink-0 overflow-visible">
         {/* Header: logo only */}
-        <div className="flex items-center justify-center p-3 border-b border-gray-200 shrink-0">
-          <img
-            src="/vl-logo.jpeg"
-            alt="Logo"
-            className="h-8 w-8 shrink-0 object-contain"
-            title={`Welcome, ${authData.user?.username || 'Admin'}`}
-          />
+        <div className="flex items-center justify-center py-6 shrink-0">
+          <div className="h-8 w-8 bg-[#6348ef] rounded-[10px] flex items-center justify-center shadow-lg shadow-indigo-200">
+            <LayoutDashboard className="h-4 w-4 text-white" />
+          </div>
         </div>
 
         {/* Nav: icons only, label on hover */}
-        <nav className="flex-1 mt-4 px-2 overflow-y-auto">
-          <ul className="space-y-1">
+        <nav className="flex-1 px-2 mt-4">
+          <ul className="space-y-4">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
               return (
-                <li key={item.id}>
+                <li key={item.id} className="relative">
                   <button
                     onClick={() => setCurrentPage(item.id)}
                     onMouseEnter={(e) => showTooltip(item.label, e)}
                     onMouseLeave={hideTooltip}
-                    className={`w-full flex items-center justify-center px-2 py-3 rounded-lg transition-colors duration-200 ${
+                    className={`w-full flex items-center justify-center py-2 rounded-xl transition-all duration-300 ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'text-indigo-600 bg-indigo-50/50'
+                        : 'text-gray-400 hover:text-indigo-600 hover:bg-gray-50'
                     }`}
                   >
                     <Icon
-                      className={`h-5 w-5 shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}
+                      className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}
                     />
+                    {isActive && (
+                      <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-indigo-600 rounded-r-full" />
+                    )}
                   </button>
                 </li>
               );
             })}
           </ul>
         </nav>
-
-        {/* Logout: icon only, label on hover */}
-        <div className="p-2 border-t border-gray-200 shrink-0">
-          <button
-            onClick={onLogout}
-            onMouseEnter={(e) => showTooltip('Logout', e)}
-            onMouseLeave={hideTooltip}
-            className="w-full flex items-center justify-center px-2 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-          >
-            <LogOut className="h-5 w-5 shrink-0" />
-          </button>
-        </div>
       </aside>
       {tooltip && typeof document !== 'undefined' && createPortal(tooltipEl, document.body)}
     </>

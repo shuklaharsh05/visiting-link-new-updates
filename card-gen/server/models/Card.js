@@ -253,6 +253,13 @@ const cardSchema = new mongoose.Schema(
     downloads: { type: Number, default: 0 },
     shopLinkClicks: { type: Map, of: Number, default: () => new Map() }, // Track clicks per shop name: { "amazon": 50, "flipkart": 45 }
     lastViewed: Date,
+    // Daily view counts for analytics charts
+    viewsHistory: [
+      {
+        date: { type: String, required: true }, // YYYY-MM-DD
+        count: { type: Number, default: 0 },
+      },
+    ],
 
     // Legacy fields for backward compatibility
     name: { type: String },

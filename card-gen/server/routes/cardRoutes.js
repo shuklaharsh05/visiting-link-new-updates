@@ -18,6 +18,7 @@ import {
   trackShopLinkClick,
   getCataloguePdf,
   getCataloguePdfByUrl,
+  getCardWeeklyViews,
 } from "../controllers/cardController.js";
 import {
   submitVcfLead,
@@ -40,6 +41,7 @@ router.get("/submission/:submissionId", optionalAuth, getCardBySubmissionId); //
 router.get("/client/:clientId", optionalAuth, getCardByClientId); // Get card by client ID
 router.post("/:id/vcf-lead", submitVcfLeadValidators, submitVcfLead);
 router.get("/:id/catalogue", getCataloguePdf); // Stream catalogue PDF by card ID
+router.get("/:id/weekly-views", protect, getCardWeeklyViews); // Get weekly views data for a card
 router.get("/:id", optionalAuth, getCardById); // Get specific card by ID
 router.post("/:id/view", updateViewCount); // Update view count for a card
 router.post("/:id/share", updateShareCount); // Update share count for a card

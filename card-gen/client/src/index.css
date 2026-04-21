@@ -14,28 +14,30 @@ body {
 }
 
 
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
+/* Global Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 
-.scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #ff64f2 #ffffff;
+::-webkit-scrollbar-track {
+  background: #f8fafc;
 }
 
-/* For webkit browsers: simulate a scrollbar with a vertical gradient on the thumb */
-.scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
-.scrollbar::-webkit-scrollbar-thumb {
-    border-radius: 8px;
-    /* Gradient background for the thumb */
-    background: linear-gradient(180deg, #ae9bff 0%, #6D63F5 100%);
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6366f1;
 }
-.scrollbar::-webkit-scrollbar-track {
-    background: #ffffff;
-    border-radius: 8px;
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 #f8fafc;
 }
 
 .shine-btn .shine-glass {
@@ -88,4 +90,12 @@ body {
         opacity: 0;
       }
     }
+  }
+
+  @keyframes bounce-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
   }

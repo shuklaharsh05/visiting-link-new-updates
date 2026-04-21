@@ -902,18 +902,24 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900">
+      {/* Sticky Mobile Header / Balanced Desktop Header */}
+      <div className="sticky top-0 lg:static z-40 bg-white/80 backdrop-blur-md lg:bg-transparent -mx-4 px-4 lg:mx-0 lg:px-0 py-3 mb-6 border-b border-slate-100 lg:border-none flex items-center justify-between">
+        <button 
+          type="button" 
+          onClick={onBack} 
+          className="inline-flex items-center gap-2 p-2 -ml-2 text-slate-600 hover:text-slate-900 transition-colors"
+        >
           <ArrowLeft className="h-5 w-5" />
-          Back
+          <span className="font-bold text-sm lg:text-base hidden sm:inline">Back</span>
         </button>
+        
         <div className="flex items-center gap-2">
           {onPreview && (
             <button
               type="button"
               onClick={handlePreview}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-60"
+              className="lg:inline-flex hidden items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 disabled:opacity-60 transition-all active:scale-95"
             >
               <Eye className="h-4 w-4" />
               Preview
@@ -923,10 +929,10 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
             type="button"
             onClick={() => handleSave()}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium disabled:opacity-60"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold disabled:opacity-60 shadow-lg shadow-black/10 active:scale-95 transition-all"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving…" : "Save card"}
+            {saving ? "Saving…" : "Save Card"}
           </button>
         </div>
       </div>
@@ -937,23 +943,27 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
         </div>
       )}
 
-      <div className="space-y-1 mb-6">
-        {(selectedTemplate?.name || templateDetail?.name) && (
-          <p className="mb-2 text-xs text-slate-500">
-            Template:{" "}
-            <span className="font-medium text-slate-700">
-              {selectedTemplate?.name || templateDetail?.name}
-            </span>
-          </p>
-        )}
-        <label className="block text-sm font-medium text-slate-700">Card name</label>
-        <input
-          type="text"
-          value={cardName}
-          onChange={(e) => setCardName(e.target.value)}
-          placeholder="e.g. My business card"
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-        />
+      <div className="bg-slate-50 rounded-2xl p-4 lg:p-0 lg:bg-transparent border border-slate-100 lg:border-none mb-8">
+        <div className="space-y-3">
+          {(selectedTemplate?.name || templateDetail?.name) && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-wider">Template</span>
+              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold">
+                {selectedTemplate?.name || templateDetail?.name}
+              </span>
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-bold text-slate-700">Card display name</label>
+            <input
+              type="text"
+              value={cardName}
+              onChange={(e) => setCardName(e.target.value)}
+              placeholder="e.g. Personal Portfolio"
+              className="w-full bg-white border-2 border-slate-100 focus:border-blue-500 rounded-xl px-4 py-3 text-sm font-semibold transition-all focus:ring-0 outline-none shadow-sm"
+            />
+          </div>
+        </div>
       </div>
 
       {useRichLinkPro ? (
@@ -965,10 +975,12 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
                 <button
                   type="button"
                   onClick={() => toggleSectionCollapse(section.id)}
-                  className="w-full flex items-center justify-between px-5 py-3.5 text-left font-medium text-slate-900 bg-slate-50/80 hover:bg-slate-100/80 border-b border-slate-100"
+                  className="w-full flex items-center justify-between px-5 py-4 text-left font-bold text-slate-900 bg-slate-50/50 hover:bg-slate-100/50 border-b border-slate-100 transition-colors"
                 >
-                  <span className="text-[15px]">{section.label}</span>
-                  <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`} />
+                  <span className="text-[14px] lg:text-[15px]">{section.label}</span>
+                  <div className={`p-1 rounded-full bg-white shadow-sm transition-transform duration-300 ${isCollapsed ? "-rotate-90" : ""}`}>
+                    <ChevronDown className="h-4 w-4 text-slate-500" />
+                  </div>
                 </button>
                 {!isCollapsed && (
                   <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -1005,6 +1017,20 @@ export default function UserCardGenerator({ user, existingCard, selectedTemplate
         className="hidden"
         onChange={handleUserPickedFiles}
       />
+
+      {/* Sticky Mobile Preview Button */}
+      {onPreview && (
+        <div className="lg:hidden fixed bottom-24 right-6 z-[45]">
+          <button
+            type="button"
+            onClick={handlePreview}
+            disabled={saving}
+            className="w-14 h-14 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 active:scale-90 transition-transform disabled:opacity-50"
+          >
+            <Eye className="h-6 w-6" />
+          </button>
+        </div>
+      )}
 
       <MediaManager
         isOpen={mediaOpen}

@@ -680,6 +680,11 @@ class ApiService {
     return response;
   }
 
+  // Get weekly views data for a card (last 7 days)
+  async getCardWeeklyViews(cardId) {
+    return this.request(`/cards/${cardId}/weekly-views`);
+  }
+
   // Dashboard stats
 
   // Additional helper methods for user profile data

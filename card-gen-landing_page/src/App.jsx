@@ -21,8 +21,10 @@ import PublicCard from "./pages/PublicCard.jsx";
 import DetailsForm from "./pages/DetailsForm.jsx";
 import Expo from "./pages/expo.jsx";
 import TermsAndConditions from "./pages/TermsAndConditions.jsx";
-import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import LegalPrivacy from "./pages/LegalPrivacy.jsx";
 import RefundPolicy from "./pages/RefundPolicy.jsx";
+import Demo from "./pages/Demo.jsx";
+import Shop from "./pages/Shop.jsx";
 
 function FloatingWhatsApp() {
   const location = useLocation();
@@ -33,7 +35,7 @@ function FloatingWhatsApp() {
       href="https://wa.me/919236553585"
       target="_blank"
       rel="noopener noreferrer"
-      className="floating-whatsapp"
+      className="floating-whatsapp hidden md:flex"
     >
       <img
         src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
@@ -53,7 +55,7 @@ function App() {
           <Route path="/prices" element={<PricingClient />} />
           <Route path="/expo" element={<Expo />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<LegalPrivacy />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
@@ -79,6 +81,8 @@ function App() {
               path="interested-candidates"
               element={<InterestedCandidates />}
             />
+            <Route path="shop" element={<Shop />} />
+            <Route path="demo" element={<Demo />} />
             {/* <Route path="*" element={<DefaultUserRedirect />} /> */}
           </Route>
         </Routes>

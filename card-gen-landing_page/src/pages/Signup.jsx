@@ -17,6 +17,7 @@ import {
   classifyIdentifier,
   getIdentifierErrorMessage,
 } from "../utils/identifier.js";
+import { isMobileViewport } from "../utils/isMobile.js";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -40,8 +41,8 @@ export default function Signup() {
         setError(error.message);
         setLoading(false);
       } else {
-        const hasInquiries = authUser?.inquiries && Array.isArray(authUser.inquiries) && authUser.inquiries.length > 0;
-        navigate(hasInquiries ? "/dashboard" : "/my-card");
+        const mobile = isMobileViewport();
+        navigate(mobile ? "/my-card" : "/dashboard");
       }
     } catch (err) {
       setError("Google signup failed. Please try again.");
@@ -91,8 +92,8 @@ export default function Signup() {
       setError(error.message);
       setLoading(false);
     } else {
-      const hasInquiries = authUser?.inquiries && Array.isArray(authUser.inquiries) && authUser.inquiries.length > 0;
-      navigate(hasInquiries ? "/dashboard" : "/my-card");
+      const mobile = isMobileViewport();
+      navigate(mobile ? "/my-card" : "/dashboard");
     }
   };
 

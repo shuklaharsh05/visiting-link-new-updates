@@ -22,9 +22,12 @@ import {
   Mail,
   Phone,
   StickyNote,
+  ArrowLeft,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function SavedCards() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [savedCards, setSavedCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -436,17 +439,21 @@ export default function SavedCards() {
     <div className="w-full mx-auto font-poppins px-4 sm:px-6 lg:px-8 mt-6">
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div>
+          <div className="flex items-center gap-6">
+            <button onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="w-6 h-6 mb-2" />
+              
+            </button>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
               Saved Cards
             </h1>
+          </div>
             <p className="text-slate-600 text-base sm:text-lg">
               {savedCards.length > 0
                 ? `You have ${savedCards.length} saved business card${savedCards.length > 1 ? "s" : ""
                 }`
                 : "You haven't saved any business cards yet"}
             </p>
-          </div>
 
           {savedCards.length > 0 && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto sm:min-w-[300px] lg:min-w-[500px]">

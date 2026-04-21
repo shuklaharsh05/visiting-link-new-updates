@@ -1,0 +1,18 @@
+{
+  "name": "card-gen",
+  "version": "1.0.0",
+  "description": "A comprehensive digital business card generation platform with admin panel, supporting multiple categories and customizable templates.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "npm run dev --prefix client",
+    "server": "npm run dev --prefix server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

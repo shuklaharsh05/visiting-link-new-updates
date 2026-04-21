@@ -12,6 +12,7 @@ import {
   KeyRound,
   ClipboardList,
   Star,
+  ShoppingBag,
 } from "lucide-react";
 import { useState } from "react";
 import LinkCredentialsModal from "./LinkCredentialsModal.jsx";
@@ -31,6 +32,7 @@ export default function UserLayout() {
   };
 
   const navItems = [
+    { path: "/shop", icon: ShoppingBag, label: "Shop" },
     { path: "/saved-cards", icon: Bookmark, label: "Saved Cards" },
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/appointments", icon: Calendar, label: "Appointments" },
@@ -110,64 +112,76 @@ export default function UserLayout() {
         ></div>
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen max-w-full overflow-x-hidden">
         {/* Desktop UI unchanged: keep sidebar + existing layout.
             Mobile UI: use a fixed bottom navigation (no top bar). */}
 
-        <main className="flex-1 py-4 lg:p-8 pb-24 lg:pb-0">
+        <main className="flex-1 md:py-4 bg-white lg:p-8 pb-24 lg:pb-0">
           <Outlet />
         </main>
 
         {/* Mobile bottom navigation (app-like) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200">
-          <div className="mx-auto max-w-[900px] px-3 py-2">
-            <div className="grid grid-cols-4 gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard")}
-                className={`flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-xs font-medium transition-colors ${isActivePath("/dashboard")
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
-                  }`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                Home
-              </button>
-
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+          <div className="mx-auto max-w-[500px] px-4 py-3">
+            <div className="grid grid-cols-5 gap-1">
               <button
                 type="button"
                 onClick={() => navigate("/my-card")}
-                className={`flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-xs font-medium transition-colors ${isActivePath("/my-card")
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${isActivePath("/my-card")
+                  ? "bg-gradient-to-b from-[#f8faff] to-[#e8efff] text-blue-600 shadow-sm border border-blue-50/50"
+                  : "text-slate-500 hover:bg-slate-50"
                   }`}
               >
-                <CreditCard className="w-5 h-5" />
-                Cards
+                <img src="/bottom_bar_1.png" alt="My Cards" className="w-6 h-6 object-contain" />
+                <span>My Cards</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => navigate("/contacts")}
-                className={`flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-xs font-medium transition-colors ${isActivePath("/contacts")
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                onClick={() => navigate("/reviews")}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${isActivePath("/reviews")
+                  ? "bg-gradient-to-b from-[#f8faff] to-[#e8efff] text-blue-600 shadow-sm border border-blue-50/50"
+                  : "text-slate-500 hover:bg-slate-50"
                   }`}
               >
-                <Users className="w-5 h-5" />
-                Profile
+                <img src="/bottom_bar_rev.png" alt="Reviews" className="w-6 h-6 object-contain" />
+                <span>Reviews</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setSidebarOpen(true)}
-                className={`flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-xs font-medium transition-colors ${sidebarOpen
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                onClick={() => navigate("/shop")}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${isActivePath("/shop")
+                  ? "bg-gradient-to-b from-[#f8faff] to-[#e8efff] text-blue-600 shadow-sm border border-blue-50/50"
+                  : "text-slate-500 hover:bg-slate-50"
                   }`}
               >
-                <Menu className="w-5 h-5" />
-                More
+                <img src="/bottom_bar_2.png" alt="Shop" className="w-6 h-6 object-contain" />
+                <span>Shop</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/appointments")}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${isActivePath("/appointments")
+                  ? "bg-gradient-to-b from-[#f8faff] to-[#e8efff] text-blue-600 shadow-sm border border-blue-50/50"
+                  : "text-slate-500 hover:bg-slate-50"
+                  }`}
+              >
+                <img src="/bottom_bar_3.png" alt="Message" className="w-6 h-6 object-contain" />
+                <span>Messages</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard")}
+                className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${isActivePath("/dashboard")
+                  ? "bg-gradient-to-b from-[#f8faff] to-[#e8efff] text-blue-600 shadow-sm border border-blue-50/50"
+                  : "text-slate-500 hover:bg-slate-50"
+                  }`}
+              >
+                <img src="/bottom_bar_4.png" alt="Analytics" className="w-6 h-6 object-contain" />
+                <span>Analytics</span>
               </button>
             </div>
           </div>
